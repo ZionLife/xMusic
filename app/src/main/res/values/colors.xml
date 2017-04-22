@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+
+    <color name="topBarColor">#ee4647</color>
+    <color name="topBarColorLow">#F27979</color>
+    <color name="search_bar_text_color">#f49f9f</color>
+    <color name="white">#ffffffff</color>
+    <color name="black">#ff000000</color>
+
+    <color name="colorPrimaryDark">@color/topBarColor</color>
+    <color name="colorPrimary">@color/colorPrimaryDark</color>
+    <color name="colorAccent">#00BCD4</color>
+    <color name="colorPrimaryLight">@color/topBarColorLow</color>
+    <color name="colorPrimaryText">#212121</color>
+    <color name="colorRedDark">#ec2e2e</color>
 </resources>
