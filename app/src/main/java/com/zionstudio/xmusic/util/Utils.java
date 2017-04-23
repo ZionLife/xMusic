@@ -1,7 +1,12 @@
-package com.zionstudio.xmusic;
+package com.zionstudio.xmusic.util;
 
 import android.content.Context;
+import android.content.Intent;
 import android.widget.Toast;
+
+import com.zionstudio.xmusic.LoginActivity;
+import com.zionstudio.xmusic.activity.MainActivity;
+import com.zionstudio.xmusic.MyApplication;
 
 /**
  * Created by Administrator on 2017/4/21 0021.
@@ -24,7 +29,30 @@ public class Utils {
         return (int) (pxValue / scale + 0.5f);
     }
 
-    public static void makeToast(String str){
+    /**
+     * 创建并显示Toast
+     *
+     * @param str
+     */
+    public static void makeToast(String str) {
         Toast.makeText(MyApplication.mContext, str, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * 跳转到登录界面
+     *
+     * @param context
+     */
+    public static void skipToLoginActivity(Context context) {
+        context.startActivity(new Intent(context, LoginActivity.class));
+    }
+
+    /**
+     * 跳转到主界面
+     *
+     * @param context
+     */
+    public static void skipToMainActivity(Context context) {
+        context.startActivity(new Intent(context, MainActivity.class));
     }
 }

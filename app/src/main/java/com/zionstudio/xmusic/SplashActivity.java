@@ -1,16 +1,16 @@
 package com.zionstudio.xmusic;
 
-import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+
+import com.zionstudio.xmusic.util.Utils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -26,7 +26,7 @@ public class SplashActivity extends AppCompatActivity {
 
     private static final int SPLASH_ANIM_DURA = 3 * 1000;
     private static float SPLASH_ANIM_FROM_SCALE = 1.0f;
-    private static float SPLASH_ANIM_TO_SCALE = 1.05f;
+    private static float SPLASH_ANIM_TO_SCALE = 1.08f;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -61,20 +61,20 @@ public class SplashActivity extends AppCompatActivity {
             @Override
             public void run() {
 //                startActivity(new Intent(SplashActivity.this, MainActivity.class));
-                skipToLoginActivity();
+                Utils.skipToLoginActivity(SplashActivity.this);
                 SplashActivity.this.finish();
             }
         }, 3000);
     }
 
 
-    private void skipToMainActivity() {
-        startActivity(new Intent(SplashActivity.this, MainActivity.class));
-        this.finish();
-    }
-
-    private void skipToLoginActivity(){
-        startActivity(new Intent(SplashActivity.this, LoginActivity.class));
-        SplashActivity.this.finish();
-    }
+//    private void skipToMainActivity() {
+//        startActivity(new Intent(SplashActivity.this, MainActivity.class));
+//        this.finish();
+//    }
+//
+//    private void skipToLoginActivity() {
+//        startActivity(new Intent(SplashActivity.this, LoginActivity.class));
+//        SplashActivity.this.finish();
+//    }
 }

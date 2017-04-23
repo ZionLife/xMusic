@@ -1,20 +1,28 @@
 package com.zionstudio.xmusic;
 
-import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+
+import com.zionstudio.videoapp.okhttp.CommonOkHttpClient;
+import com.zionstudio.videoapp.okhttp.listener.DisposeDataHandler;
+import com.zionstudio.videoapp.okhttp.listener.DisposeDataListener;
+import com.zionstudio.videoapp.okhttp.request.CommonRequest;
+import com.zionstudio.videoapp.okhttp.request.RequestParams;
+import com.zionstudio.xmusic.util.UrlUtils;
+import com.zionstudio.xmusic.util.Utils;
+
+import java.util.HashMap;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-
-import static android.R.id.edit;
+import okhttp3.Request;
 
 /**
  * Created by Administrator on 2017/4/21 0021.
@@ -94,9 +102,9 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 mPhone = mEtPhone.getText().toString();
                 mPassword = mEtPassword.getText().toString();
-                if(!TextUtils.isEmpty(mPassword) && !TextUtils.isEmpty(mPhone)){
+                if (!TextUtils.isEmpty(mPassword) && !TextUtils.isEmpty(mPhone)) {
                     checkAccount();
-                }else {
+                } else {
                     Utils.makeToast("请输入用户名和密码");
                 }
             }
@@ -107,6 +115,24 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void checkAccount() {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("phone", mPhone);
+        map.put("password", mPassword);
+        RequestParams params = new RequestParams(map);
 
+        Request request = CommonRequest.createGetRequest(UrlUtils.LOGIN, params);
+        DisposeDataListener listener = new DisposeDataListener() {
+            @Override
+            public void onSuccess(Object responseObj) {
+                Log.e(TAG, "onLoginSuccess");
+
+            }
+
+            @Override
+            public void onFailure(Object responseObj) {
+                Log.e(TAG, "onLoginFailure");
+            }
+        };
+        CommonOkHttpClient.get(request, new DisposeDataHandler(listener));
     }
 }
