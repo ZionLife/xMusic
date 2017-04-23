@@ -1,14 +1,9 @@
-package com.zionstudio.xmusic;
+package com.zionstudio.xmusic.view;
 
 import android.content.Context;
-import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.widget.EditText;
-
-import org.w3c.dom.Attr;
 
 /**
  * Created by Administrator on 2017/4/21 0021.

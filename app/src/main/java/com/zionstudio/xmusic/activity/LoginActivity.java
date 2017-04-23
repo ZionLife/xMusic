@@ -1,5 +1,7 @@
-package com.zionstudio.xmusic;
+package com.zionstudio.xmusic.activity;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -15,8 +17,12 @@ import com.zionstudio.videoapp.okhttp.listener.DisposeDataHandler;
 import com.zionstudio.videoapp.okhttp.listener.DisposeDataListener;
 import com.zionstudio.videoapp.okhttp.request.CommonRequest;
 import com.zionstudio.videoapp.okhttp.request.RequestParams;
+import com.zionstudio.xmusic.MyApplication;
+import com.zionstudio.xmusic.R;
+import com.zionstudio.xmusic.model.user.UserInfo;
 import com.zionstudio.xmusic.util.UrlUtils;
 import com.zionstudio.xmusic.util.Utils;
+import com.zionstudio.xmusic.view.LoginEt;
 
 import java.util.HashMap;
 
@@ -30,10 +36,6 @@ import okhttp3.Request;
 
 public class LoginActivity extends AppCompatActivity {
 
-    @BindView(R.id.et_phone)
-    LoginEt mEtPhone;
-    @BindView(R.id.et_password)
-    LoginEt mEtPassword;
 
     private static final String TAG = "LoginActivity";
     private static int etHeight;
@@ -42,6 +44,10 @@ public class LoginActivity extends AppCompatActivity {
     private static String mPassword = null;
     @BindView(R.id.btn_login)
     Button mBtnLogin;
+    @BindView(R.id.et_phone)
+    LoginEt mEtPhone;
+    @BindView(R.id.et_password)
+    LoginEt mEtPassword;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -52,6 +58,11 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void initView() {
+        if (MyApplication.sUserInfo != null) {
+            String str = MyApplication.sUserInfo.account.userName;
+            mEtPhone.setText(str.substring(str.indexOf("_") + 1, str.length()));
+        }
+
         etHeight = mEtPassword.getHeight();
         drawableDimension = Utils.dp2px(this, 20);
 
@@ -114,6 +125,9 @@ public class LoginActivity extends AppCompatActivity {
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
     }
 
+    /**
+     * 验证账户信息，并获取账户头像昵称等保存到sp中
+     */
     private void checkAccount() {
         HashMap<String, String> map = new HashMap<>();
         map.put("phone", mPhone);
@@ -125,7 +139,10 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Object responseObj) {
                 Log.e(TAG, "onLoginSuccess");
-
+                MyApplication.sUserInfo = (UserInfo) responseObj;
+                updateUserInfo();
+                Utils.skipToMainActivity(LoginActivity.this);
+                LoginActivity.this.finish();
             }
 
             @Override
@@ -133,6 +150,26 @@ public class LoginActivity extends AppCompatActivity {
                 Log.e(TAG, "onLoginFailure");
             }
         };
-        CommonOkHttpClient.get(request, new DisposeDataHandler(listener));
+        CommonOkHttpClient.get(request, new DisposeDataHandler(listener, UserInfo.class));
+    }
+
+    /**
+     * 将用户信息保存到SharedPreferences中
+     */
+    private void updateUserInfo() {
+        UserInfo i = MyApplication.sUserInfo;
+        SharedPreferences userSP = getSharedPreferences("userSP", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = userSP.edit();
+        //将Object转换成String输出
+        editor.putString("userInfo", Utils.Object2String(i));
+//        editor.putString("id", i.account.id);
+//        editor.putString("userName", i.account.userName);
+//        editor.putString("province", i.profile.province);
+//        editor.putString("avatarUrl", i.profile.avatarUrl);
+//        editor.putString("backgroundUrl", i.profile.backgroundUrl);
+//        editor.putString("nickname", i.profile.nickname);
+//        editor.putString("userId", i.profile.userId);
+//        editor.putString("phone", mPhone);
+        editor.commit();
     }
 }

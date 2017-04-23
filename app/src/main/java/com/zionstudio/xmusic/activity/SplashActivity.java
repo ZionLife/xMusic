@@ -1,8 +1,10 @@
-package com.zionstudio.xmusic;
+package com.zionstudio.xmusic.activity;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -10,6 +12,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
+import com.zionstudio.xmusic.MyApplication;
+import com.zionstudio.xmusic.R;
+import com.zionstudio.xmusic.model.user.UserInfo;
 import com.zionstudio.xmusic.util.Utils;
 
 import butterknife.BindView;
@@ -21,12 +26,13 @@ import butterknife.ButterKnife;
 
 public class SplashActivity extends AppCompatActivity {
 
-    @BindView(R.id.fl_splash)
-    FrameLayout mFlSplash;
 
     private static final int SPLASH_ANIM_DURA = 3 * 1000;
     private static float SPLASH_ANIM_FROM_SCALE = 1.0f;
     private static float SPLASH_ANIM_TO_SCALE = 1.08f;
+    private static int flag = 0;    //指示动画结束后跳转到哪个Activity 0：登录； 1：主页面
+    @BindView(R.id.fl_splash)
+    FrameLayout mFlSplash;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -39,6 +45,20 @@ public class SplashActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 //        skipToLoginActivity();
         startAnim();
+        init();
+    }
+
+    private void init() {
+        //初始化用户信息
+        SharedPreferences userSP = getSharedPreferences("userSP", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = userSP.edit();
+        String userInfo = userSP.getString("userInfo", null);
+        if (userInfo == null) {
+            flag = 0;
+        } else {
+            flag = 1;
+            MyApplication.sUserInfo = (UserInfo) Utils.String2Object(userInfo);
+        }
     }
 
     private void startAnim() {
@@ -56,25 +76,19 @@ public class SplashActivity extends AppCompatActivity {
         );
         set.setDuration(3 * 1000).start();
 
-        //判断并跳转到登录界面
+        /**
+         *         判断并跳转到登录界面
+         */
         getWindow().getDecorView().postDelayed(new Runnable() {
             @Override
             public void run() {
-//                startActivity(new Intent(SplashActivity.this, MainActivity.class));
-                Utils.skipToLoginActivity(SplashActivity.this);
+                if (flag == 0) {
+                    Utils.skipToLoginActivity(SplashActivity.this);
+                } else {
+                    Utils.skipToMainActivity(SplashActivity.this);
+                }
                 SplashActivity.this.finish();
             }
         }, 3000);
     }
-
-
-//    private void skipToMainActivity() {
-//        startActivity(new Intent(SplashActivity.this, MainActivity.class));
-//        this.finish();
-//    }
-//
-//    private void skipToLoginActivity() {
-//        startActivity(new Intent(SplashActivity.this, LoginActivity.class));
-//        SplashActivity.this.finish();
-//    }
 }
