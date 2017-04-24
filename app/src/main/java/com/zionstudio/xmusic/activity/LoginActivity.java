@@ -67,16 +67,16 @@ public class LoginActivity extends AppCompatActivity {
         drawableDimension = Utils.dp2px(this, 20);
 
         //给PhoneEditText设置图标
-        final Drawable phoneDrawableLeft = getResources().getDrawable(R.mipmap.phone_login, null);
+        final Drawable phoneDrawableLeft = getResources().getDrawable(R.drawable.phone_login, null);
         phoneDrawableLeft.setBounds(0, 0, drawableDimension, drawableDimension);
-        final Drawable phoneDrawableRight = getResources().getDrawable(R.mipmap.empty, null);
+        final Drawable phoneDrawableRight = getResources().getDrawable(R.drawable.empty, null);
         phoneDrawableRight.setBounds(0, 0, drawableDimension, drawableDimension);
 
         mEtPhone.setCompoundDrawablePadding(Utils.dp2px(this, 5));
 
-        Drawable passDrawableLeft = getResources().getDrawable(R.mipmap.password_login, null);
+        Drawable passDrawableLeft = getResources().getDrawable(R.drawable.password_login, null);
         passDrawableLeft.setBounds(0, 0, drawableDimension, drawableDimension);
-        Drawable passDrawableRigth = getResources().getDrawable(R.mipmap.forgotpass, null);
+        Drawable passDrawableRigth = getResources().getDrawable(R.drawable.forgotpass, null);
         passDrawableRigth.setBounds(0, 0, 50, 50);
         mEtPassword.setCompoundDrawables(passDrawableLeft, null, passDrawableRigth, null);
         mEtPassword.setCompoundDrawablePadding(Utils.dp2px(this, 5));
@@ -137,9 +137,10 @@ public class LoginActivity extends AppCompatActivity {
         Request request = CommonRequest.createGetRequest(UrlUtils.LOGIN, params);
         DisposeDataListener listener = new DisposeDataListener() {
             @Override
-            public void onSuccess(Object responseObj) {
+            public void onSuccess(Object responseObj, String cookie) {
                 Log.e(TAG, "onLoginSuccess");
                 MyApplication.sUserInfo = (UserInfo) responseObj;
+                MyApplication.sUserInfo.setCookies(cookie);
                 updateUserInfo();
                 Utils.skipToMainActivity(LoginActivity.this);
                 LoginActivity.this.finish();
@@ -162,14 +163,6 @@ public class LoginActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = userSP.edit();
         //将Object转换成String输出
         editor.putString("userInfo", Utils.Object2String(i));
-//        editor.putString("id", i.account.id);
-//        editor.putString("userName", i.account.userName);
-//        editor.putString("province", i.profile.province);
-//        editor.putString("avatarUrl", i.profile.avatarUrl);
-//        editor.putString("backgroundUrl", i.profile.backgroundUrl);
-//        editor.putString("nickname", i.profile.nickname);
-//        editor.putString("userId", i.profile.userId);
-//        editor.putString("phone", mPhone);
         editor.commit();
     }
 }

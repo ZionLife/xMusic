@@ -11,4 +11,13 @@ public class UserInfo implements Serializable {
     public Account account;
     public Profile profile;
     public ArrayList<Binding> bindings;
+    private String cookies;
+
+    public void setCookies(String cookies) {
+        this.cookies = cookies;
+    }
+
+    public String getCookies() {
+        return cookies;
+    }
 }

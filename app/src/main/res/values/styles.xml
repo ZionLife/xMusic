@@ -13,4 +13,15 @@
         <item name="colorControlActivated">@color/colorPrimary</item>
         <item name="colorControlNormal">@color/colorPrimaryDark</item>
     </style>
+
+    <style name="ToolBarIV" parent="AppTheme">
+        <item name="android:layout_width">55dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:clickable">true</item>
+    </style>
+
+    <!--消除Toolbar左边的空白空间-->
+    <style name="ToolbarWithoutLeftSpace" parent="Base.Widget.AppCompat.Toolbar">
+        <item name="contentInsetStart">0dp</item>
+    </style>
 </resources>

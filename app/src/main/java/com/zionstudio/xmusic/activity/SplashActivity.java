@@ -89,6 +89,6 @@ public class SplashActivity extends AppCompatActivity {
                 }
                 SplashActivity.this.finish();
             }
-        }, 3000);
+        }, 1000);
     }
 }

@@ -1,7 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
               android:layout_width="match_parent"
-              android:layout_height="match_parent">
+              android:layout_height="match_parent"
+              android:orientation="vertical">
 
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/tb"
+        style="@style/ToolbarWithoutLeftSpace"
+        android:layout_width="match_parent"
+        android:layout_height="75dp"
+        android:background="@color/colorPrimary"
+        android:fitsSystemWindows="true">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp">
+
+            <ImageView
+                android:id="@+id/iv_drawer"
+                android:layout_width="23dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/toolbar_menu"/>
+
+            <!--用来分割下面两个ImageView，使它们居中的同时减小View树的高度-->
+            <View
+                android:id="@+id/view_divider"
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"/>
+
+            <ImageView
+                android:id="@+id/iv_toolbar_music"
+                style="@style/ToolBarIV"
+                android:layout_centerHorizontal="true"
+                android:layout_toLeftOf="@id/view_divider"
+                android:src="@drawable/toolbar_music"/>
+
+
+            <ImageView
+                android:id="@+id/iv_toolbar_discover"
+                style="@style/ToolBarIV"
+                android:layout_centerHorizontal="true"
+                android:layout_toRightOf="@id/view_divider"
+                android:src="@drawable/toolbar_discover"/>
+
+
+            <ImageView
+                android:id="@+id/iv_search"
+                android:layout_width="23dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/toolbar_search"/>
+        </RelativeLayout>
+    </android.support.v7.widget.Toolbar>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/vp_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 </LinearLayout>
