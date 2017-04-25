@@ -8,6 +8,7 @@ import java.util.ArrayList;
  */
 
 public class UserInfo implements Serializable {
+    public String code;
     public Account account;
     public Profile profile;
     public ArrayList<Binding> bindings;

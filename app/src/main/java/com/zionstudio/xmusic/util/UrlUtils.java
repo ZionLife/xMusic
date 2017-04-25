@@ -7,5 +7,7 @@ package com.zionstudio.xmusic.util;
 public class UrlUtils {
     public static final String SERVER_HOST = "http://zionstudio.cn:3000";
     public static final String LOCAL_HOST = "http://localhost:3000";
-    public static final String LOGIN = SERVER_HOST+"/login/cellphone";
+    public static final String LOGIN = SERVER_HOST + "/login/cellphone";
+    public static final String PLAYLIST = SERVER_HOST + "/user/playlist";
+
 }

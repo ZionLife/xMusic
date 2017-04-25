@@ -21,6 +21,9 @@ import java.io.ObjectOutputStream;
  */
 
 public class Utils {
+    //定义RecyclerView的Divider的类型常量
+    public static final int MUSIC_FG_DIVIDER_TYPE = 0;
+    public static final int MUSIC_FG_PLAYLIST_DIVIDER_TYPE = 1;
     /**
      * 根据手机的分辨率从 dp 的单位 转成为 px(像素)
      */

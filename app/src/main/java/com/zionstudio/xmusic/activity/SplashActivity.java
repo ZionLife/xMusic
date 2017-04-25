@@ -30,7 +30,7 @@ public class SplashActivity extends AppCompatActivity {
     private static final int SPLASH_ANIM_DURA = 3 * 1000;
     private static float SPLASH_ANIM_FROM_SCALE = 1.0f;
     private static float SPLASH_ANIM_TO_SCALE = 1.08f;
-    private static int flag = 0;    //指示动画结束后跳转到哪个Activity 0：登录； 1：主页面
+    private int flag = 0;    //指示动画结束后跳转到哪个Activity 0：登录； 1：主页面
     @BindView(R.id.fl_splash)
     FrameLayout mFlSplash;
 

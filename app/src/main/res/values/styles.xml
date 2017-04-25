@@ -7,6 +7,8 @@
         <item name="android:colorAccent">@color/colorAccent</item>
         <item name="android:windowContentTransitions">true</item>
         <item name="android:windowDisablePreview">true</item>
+        <item name="android:screenOrientation">portrait</item>
+        <item name="android:listDivider">@drawable/divider</item>
     </style>
 
     <style name="LoginEt" parent="Theme.AppCompat.Light">

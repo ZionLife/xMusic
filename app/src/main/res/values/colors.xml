@@ -13,4 +13,6 @@
     <color name="colorPrimaryLight">@color/topBarColorLow</color>
     <color name="colorPrimaryText">#212121</color>
     <color name="colorRedDark">#ec2e2e</color>
+
+    <color name="colorItemDivider">#ecf0f1</color>
 </resources>
