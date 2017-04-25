@@ -58,15 +58,16 @@ public class CommonJsonCallback implements Callback {
     @Override
     public void onResponse(Call call, Response response) throws IOException {
         final String result = response.body().string();
+        final String cookie = response.header("Set-Cookie", "");
         mDeliveryHandler.post(new Runnable() {
             @Override
             public void run() {
-                handleResponse(result);
+                handleResponse(result, cookie);
             }
         });
     }
 
-    private void handleResponse(Object result) {
+    private void handleResponse(Object result, String cookie) {
         if (result == null || result.toString().trim().equals("")) {
             mListener.onFailure(new OkHttpException(NETWORK_ERROR, EMPTY_MSG));
             return;
@@ -74,12 +75,12 @@ public class CommonJsonCallback implements Callback {
 
         try {
             if (mClass == null) {
-                mListener.onSuccess(result);
+                mListener.onSuccess(result, cookie);
             } else {
                 String resultStr = result.toString();
                 Object obj = JSON.parseObject(resultStr, mClass);
                 if (obj != null) {
-                    mListener.onSuccess(obj);
+                    mListener.onSuccess(obj, cookie);
                 } else {
                     mListener.onFailure(new OkHttpException(JSON_ERROR, EMPTY_MSG));
                 }

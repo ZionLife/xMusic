@@ -5,7 +5,7 @@ package com.zionstudio.videoapp.okhttp.listener;
  */
 
 public interface DisposeDataListener {
-    public void onSuccess(Object responseObj);
+    public void onSuccess(Object responseObj, String cookie);
 
     public void onFailure(Object responseObj);
 }
