@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
     private static final String TAG = "MainActivity";
     private static ArrayList<Fragment> mFragmentList = new ArrayList<Fragment>();
     private static FragmentManager mFM = null;

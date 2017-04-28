@@ -24,7 +24,7 @@ import butterknife.ButterKnife;
  * Created by Administrator on 2017/4/21 0021.
  */
 
-public class SplashActivity extends AppCompatActivity {
+public class SplashActivity extends BaseActivity {
 
 
     private static final int SPLASH_ANIM_DURA = 3 * 1000;

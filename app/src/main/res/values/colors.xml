@@ -15,4 +15,5 @@
     <color name="colorRedDark">#ec2e2e</color>
 
     <color name="colorItemDivider">#ecf0f1</color>
+    <color name="colorBtnBottomLine">#e7dfdf</color>
 </resources>

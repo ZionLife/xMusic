@@ -2,9 +2,13 @@ package com.zionstudio.xmusic.fragment;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -22,8 +26,10 @@ import com.zionstudio.videoapp.okhttp.request.CommonRequest;
 import com.zionstudio.videoapp.okhttp.request.RequestParams;
 import com.zionstudio.xmusic.MyApplication;
 import com.zionstudio.xmusic.R;
+import com.zionstudio.xmusic.activity.LocalSongsActivity;
 import com.zionstudio.xmusic.adapter.MusicFgItemAdapter;
 import com.zionstudio.xmusic.adapter.MusicFgPlaylistAdapter;
+import com.zionstudio.xmusic.listener.OnItemClickListener;
 import com.zionstudio.xmusic.model.playlist.MyPlaylist;
 import com.zionstudio.xmusic.model.playlist.Playlist;
 import com.zionstudio.xmusic.util.UrlUtils;
@@ -55,6 +61,8 @@ public class MusicFragment extends Fragment {
     TextView mTvPlaylistTitle;
     @BindView(R.id.iv_playlist_setting)
     ImageView mIvPlaylistSetting;
+    @BindView(R.id.srl_musicfg)
+    SwipeRefreshLayout mSrlMusicfg;
 
     private boolean arrIsDown;
     @BindView(R.id.rl_playlist)
@@ -99,12 +107,18 @@ public class MusicFragment extends Fragment {
                     mPlaylist.clear();
                     mPlaylist.addAll(list.playlist);
                     mPlaylistAdapter.notifyDataSetChanged();
+                    Log.e(TAG, "SUCCESS");
+                    mSrlMusicfg.setRefreshing(false);
+                } else {
+                    mSrlMusicfg.setRefreshing(false);
+                    Log.e(TAG, "failed onSueccess");
                 }
             }
 
             @Override
             public void onFailure(Object responseObj) {
-
+                Log.e(TAG, "failed onFailure");
+                mSrlMusicfg.setRefreshing(false);
             }
         };
         CommonOkHttpClient.get(request, new DisposeDataHandler(listener, MyPlaylist.class));
@@ -112,13 +126,43 @@ public class MusicFragment extends Fragment {
 
     private void initView() {
         //给RvItemMusicfg设置参数
-        mItemAdapter = new MusicFgItemAdapter(this.getContext(), mItemTitle, mItemIcon);
+        mItemAdapter = new MusicFgItemAdapter(this.getContext(), mItemTitle, mItemIcon, new OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                Utils.makeToast("点击了：" + position);
+                switch (position) {
+                    case 0:
+                        startActivity(new Intent(MusicFragment.this.getContext(), LocalSongsActivity.class));
+                        break;
+                    case 1:
+
+                        break;
+                }
+            }
+
+            @Override
+            public void onItemLongClick(View view, int position) {
+
+            }
+        });
+
         mRvItemMusicfg.setLayoutManager(new LinearLayoutManager(this.getContext()));
         mRvItemMusicfg.addItemDecoration(new DividerDecoration(this.getContext(), 0, Utils.MUSIC_FG_DIVIDER_TYPE));
         mRvItemMusicfg.setAdapter(mItemAdapter);
 
         //给RvMylistMusicfg设置参数
-        mPlaylistAdapter = new MusicFgPlaylistAdapter(MusicFragment.this.getContext(), mPlaylist);
+        mPlaylistAdapter = new MusicFgPlaylistAdapter(MusicFragment.this.getContext(), mPlaylist, new OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                Utils.makeToast("点击了歌单的：" + position);
+            }
+
+            @Override
+            public void onItemLongClick(View view, int position) {
+                Utils.makeToast("长按了歌单的：" + position);
+            }
+        });
+
         mRvMylistMusicfg.setAdapter(mPlaylistAdapter);
         mRvMylistMusicfg.setLayoutManager(new LinearLayoutManager(MusicFragment.this.getContext()));
         mRvMylistMusicfg.addItemDecoration(new DividerDecoration(this.getContext(), 0, Utils.MUSIC_FG_PLAYLIST_DIVIDER_TYPE));
@@ -157,6 +201,14 @@ public class MusicFragment extends Fragment {
             }
         });
 
+        //设置下拉刷新监听器
+        mSrlMusicfg.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getMyPlaylist();
+            }
+        });
+        mSrlMusicfg.setColorSchemeColors(getResources().getColor(R.color.colorPrimary));
     }
 
     @Override

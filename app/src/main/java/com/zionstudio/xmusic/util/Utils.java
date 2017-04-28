@@ -2,19 +2,27 @@ package com.zionstudio.xmusic.util;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.provider.MediaStore;
 import android.util.Base64;
+import android.util.Log;
 import android.widget.Toast;
 
 
 import com.zionstudio.xmusic.activity.LoginActivity;
 import com.zionstudio.xmusic.activity.MainActivity;
 import com.zionstudio.xmusic.MyApplication;
+import com.zionstudio.xmusic.model.Song;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Administrator on 2017/4/21 0021.
@@ -24,6 +32,9 @@ public class Utils {
     //定义RecyclerView的Divider的类型常量
     public static final int MUSIC_FG_DIVIDER_TYPE = 0;
     public static final int MUSIC_FG_PLAYLIST_DIVIDER_TYPE = 1;
+    public static final int LOCALSONGS_ACTIVITY_DIVIDER_TYPE = 2;
+    private static final String TAG = "Utils";
+
     /**
      * 根据手机的分辨率从 dp 的单位 转成为 px(像素)
      */
@@ -108,6 +119,49 @@ public class Utils {
             e.printStackTrace();
             return null;
         }
-
     }
+
+    /**
+     * 搜索本地音乐
+     */
+    public static List<Song> getAllMediaList(Context context, String where) {
+        Cursor cursor = null;
+        List<Song> mediaList = null;
+        try {
+            cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    null, null, null, MediaStore.Audio.AudioColumns.IS_MUSIC);
+            if (cursor == null) {
+                Log.e(TAG, "查询cursor为null");
+                return mediaList;
+            }
+            int count = cursor.getCount();
+            if (count <= 0) {
+                Log.e(TAG, "查询结果条数为0");
+                return mediaList;
+            }
+            mediaList = new ArrayList<Song>();
+            Song s = null;
+            while (cursor.moveToNext()) {
+                s = new Song();
+                s.duration = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
+                s.size = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.SIZE));
+
+                //检查是否会小于1分钟或者小于1Mb
+                if ((s.duration / 60 <= 0) && (s.size < 1024 * 1024)) {
+                    continue;
+                }
+
+                s.id = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
+                s.title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
+                s.artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+                s.albums = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
+                s.path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                mediaList.add(s);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return mediaList;
+    }
+
 }

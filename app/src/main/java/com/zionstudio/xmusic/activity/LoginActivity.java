@@ -34,7 +34,7 @@ import okhttp3.Request;
  * Created by Administrator on 2017/4/21 0021.
  */
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends BaseActivity {
 
 
     private static final String TAG = "LoginActivity";

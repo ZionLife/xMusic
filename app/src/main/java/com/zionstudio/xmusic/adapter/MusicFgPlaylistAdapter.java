@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.zionstudio.xmusic.R;
+import com.zionstudio.xmusic.listener.OnItemClickListener;
 import com.zionstudio.xmusic.model.playlist.Playlist;
 
 import java.util.ArrayList;
@@ -21,10 +22,17 @@ import java.util.ArrayList;
 public class MusicFgPlaylistAdapter extends RecyclerView.Adapter<MusicFgPlaylistAdapter.PlaylistViewHolder> {
     private Context mContext;
     private ArrayList<Playlist> mList;
+    private OnItemClickListener mListener;
+
 
     public MusicFgPlaylistAdapter(Context context, ArrayList<Playlist> list) {
+        this(context, list, null);
+    }
+
+    public MusicFgPlaylistAdapter(Context context, ArrayList<Playlist> list, OnItemClickListener l) {
         mContext = context;
         mList = list;
+        mListener = l;
     }
 
     @Override
@@ -34,7 +42,7 @@ public class MusicFgPlaylistAdapter extends RecyclerView.Adapter<MusicFgPlaylist
     }
 
     @Override
-    public void onBindViewHolder(PlaylistViewHolder holder, int position) {
+    public void onBindViewHolder(final PlaylistViewHolder holder, int position) {
         Playlist list = mList.get(position);
         //加载歌单封面图片
         Picasso.with(mContext)
@@ -43,6 +51,22 @@ public class MusicFgPlaylistAdapter extends RecyclerView.Adapter<MusicFgPlaylist
 
         holder.tvName.setText(list.name);
         holder.tvCount.setText(list.trackCount + "首，已下载10首");
+        if (mListener != null) {
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mListener.onItemClick(v, holder.getLayoutPosition());
+                }
+            });
+
+            holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    mListener.onItemLongClick(v, holder.getLayoutPosition());
+                    return false;
+                }
+            });
+        }
     }
 
     @Override

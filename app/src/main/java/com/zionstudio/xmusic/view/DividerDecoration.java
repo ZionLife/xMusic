@@ -41,10 +41,12 @@ public class DividerDecoration extends RecyclerView.ItemDecoration {
         ta.recycle();
     }
 
-
     @Override
-    public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
-        drawHorizontalLine(c, parent, state);
+    public void onDrawOver(Canvas c, RecyclerView parent, RecyclerView.State state) {
+        //避免因为RecyclerView中没有item，而导致在drawHorizontalLine中findViewById得到null
+        if (parent.getChildCount() != 0) {
+            drawHorizontalLine(c, parent, state);
+        }
     }
 
     private void drawHorizontalLine(Canvas c, RecyclerView parent, RecyclerView.State state) {
@@ -52,12 +54,16 @@ public class DividerDecoration extends RecyclerView.ItemDecoration {
         switch (type) {
             case Utils.MUSIC_FG_DIVIDER_TYPE:
                 //让divider的起始位置为TextView的起始位置
-                TextView tv = (TextView) parent.findViewById(R.id.tv_itemtitle_musicfg);
-                left = (int) tv.getX();
+                TextView tvMusicFg = (TextView) parent.findViewById(R.id.tv_itemtitle_musicfg);
+                left = (int) tvMusicFg.getX();
                 break;
             case Utils.MUSIC_FG_PLAYLIST_DIVIDER_TYPE:
                 LinearLayout ll = (LinearLayout) parent.findViewById(R.id.ll_playlist);
                 left = (int) ll.getX();
+                break;
+            case Utils.LOCALSONGS_ACTIVITY_DIVIDER_TYPE:
+                LinearLayout llLocalSongs = (LinearLayout) parent.findViewById(R.id.ll_localsongs);
+                left = (int) llLocalSongs.getX();
                 break;
         }
 
