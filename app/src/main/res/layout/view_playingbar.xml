@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="48dp"
+              android:background="@color/white"
+              android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <ImageView
+            android:id="@+id/iv_cover_playing"
+            android:layout_width="45dp"
+            android:layout_height="match_parent"
+            android:padding="5dp"
+            android:src="@mipmap/ic_launcher"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="5dp"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_title_playing"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:text="当爱已成往事(霸王别姬 电影插曲)"
+                android:textColor="@color/black"
+                android:textSize="13sp"
+                />
+
+            <TextView
+                android:id="@+id/tv_artist_playing"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:text="张国荣"
+                android:textSize="11sp"/>
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/iv_playbutton"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            android:src="@drawable/playbar_playbutton"
+            android:tint="@color/black"/>
+
+        <ImageView
+            android:id="@+id/iv_playlistbutton"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/playbar_playlist"
+            android:tint="@color/black"/>
+    </LinearLayout>
+</LinearLayout>

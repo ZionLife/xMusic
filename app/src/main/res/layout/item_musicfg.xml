@@ -3,12 +3,13 @@
               android:id="@+id/ll_itemView_musicfg"
               android:layout_width="match_parent"
               android:layout_height="60dp"
+              android:background="@color/colorPrimaryBg"
+              android:clickable="true"
+              android:foreground="?android:attr/selectableItemBackground"
               android:gravity="center_vertical"
               android:orientation="horizontal"
               android:paddingBottom="2dp"
-              android:paddingTop="2dp"
-              android:clickable="true"
-              android:foreground="?android:attr/selectableItemBackground">
+              android:paddingTop="2dp">
 
     <ImageView
         android:id="@+id/iv_itemicon_musicfg"

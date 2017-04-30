@@ -19,6 +19,5 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         mContext = this;
-        Fresco.initialize(this);
     }
 }

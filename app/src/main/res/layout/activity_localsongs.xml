@@ -20,6 +20,7 @@
                 android:id="@+id/iv_back_localsongs"
                 android:layout_width="30dp"
                 android:layout_height="match_parent"
+                android:clickable="true"
                 android:src="@drawable/back_left"/>
 
             <TextView
@@ -77,6 +78,10 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_localsongs"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:visibility="visible"/>
+
+    <include
+        layout="@layout/view_playingbar"/>
 </LinearLayout>

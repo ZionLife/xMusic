@@ -7,6 +7,7 @@ import java.io.Serializable;
  */
 
 public class Binding implements Serializable {
+    private static final long serialVersionUID = -4240993624425982733L;
     public String tokenString;
     public String id;
 }

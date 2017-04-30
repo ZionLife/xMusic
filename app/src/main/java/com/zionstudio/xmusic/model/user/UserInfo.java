@@ -8,6 +8,7 @@ import java.util.ArrayList;
  */
 
 public class UserInfo implements Serializable {
+    private static final long serialVersionUID = -9218878370081852774L;
     public String code;
     public Account account;
     public Profile profile;

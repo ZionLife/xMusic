@@ -7,9 +7,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.zionstudio.xmusic.R;
+import com.zionstudio.xmusic.listener.OnItemClickListener;
 import com.zionstudio.xmusic.model.Song;
 
 import java.util.ArrayList;
@@ -24,10 +26,12 @@ public class LocalSongsAdapter extends RecyclerView.Adapter<LocalSongsAdapter.Vi
     private Context mContext;
     private List<Song> mSongList;
     private static final String TAG = "LocalSongsAdapter";
+    private OnItemClickListener mListener = null;
 
-    public LocalSongsAdapter(Context context, List<Song> list) {
+    public LocalSongsAdapter(Context context, List<Song> list, OnItemClickListener l) {
         mContext = context;
         mSongList = list;
+        mListener = l;
     }
 
     @Override
@@ -37,21 +41,25 @@ public class LocalSongsAdapter extends RecyclerView.Adapter<LocalSongsAdapter.Vi
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
         Song s = mSongList.get(position);
         holder.tvName.setText(s.title);
         holder.tvAlbum.setText(s.artist + "-" + s.albums);
-        Log.e(TAG, "onBindViewHolder: size=" + s.size / (1024 * 1024) + "; name=" + s.title);
+        if (mListener != null) {
+            holder.rl.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mListener.onItemClick(holder.itemView, position);
+                }
+            });
+        }
         holder.ivIcon.setVisibility(View.VISIBLE);
         if (s.size >= 1024 * 1024 * 15) {
             holder.ivIcon.setImageResource(R.drawable.sq_icon);
-            Log.e(TAG, "set SQ");
         } else if (s.size >= 1024 * 1024 * 8) {
             holder.ivIcon.setImageResource(R.drawable.hq_icon);
-            Log.e(TAG, "set HQ");
         } else {
             holder.ivIcon.setVisibility(View.GONE);
-            Log.e(TAG, "set GONE");
         }
     }
 
@@ -65,6 +73,7 @@ public class LocalSongsAdapter extends RecyclerView.Adapter<LocalSongsAdapter.Vi
         TextView tvAlbum;
         ImageView ivMenu;
         ImageView ivIcon;
+        RelativeLayout rl;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -72,6 +81,7 @@ public class LocalSongsAdapter extends RecyclerView.Adapter<LocalSongsAdapter.Vi
             tvAlbum = (TextView) itemView.findViewById(R.id.tv_album_name);
             ivMenu = (ImageView) itemView.findViewById(R.id.iv_menu);
             ivIcon = (ImageView) itemView.findViewById(R.id.iv_icon);
+            rl = (RelativeLayout) itemView.findViewById(R.id.rl_localsongs);
         }
     }
 }
