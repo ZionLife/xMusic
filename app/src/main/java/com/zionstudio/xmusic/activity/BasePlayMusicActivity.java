@@ -76,10 +76,10 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 if (mRpPlaybutton.getState() == RoundProgress.PLAYING_STATE) {
-                    updateProgress();
+                    mRpPlaybutton.doInvalidate();
                     sService.pauseMusic();
                 } else if (sService.isPaused()) {
-                    updateProgress();
+                    mRpPlaybutton.doInvalidate();
                     sService.startMusic();
                 }
             }

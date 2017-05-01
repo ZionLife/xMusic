@@ -188,4 +188,8 @@ public class RoundProgress extends View {
 //        Log.e(TAG, "" + progress);
         postInvalidate();
     }
+
+    public void doInvalidate() {
+        invalidate();
+    }
 }
