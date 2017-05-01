@@ -40,8 +40,8 @@ public class LoginActivity extends BaseActivity {
     private static final String TAG = "LoginActivity";
     private static int etHeight;
     private static int drawableDimension;
-    private static String mPhone = null;
-    private static String mPassword = null;
+    private static String sPhone = null;
+    private static String sPassword = null;
     @BindView(R.id.btn_login)
     Button mBtnLogin;
     @BindView(R.id.et_phone)
@@ -50,14 +50,8 @@ public class LoginActivity extends BaseActivity {
     LoginEt mEtPassword;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-        ButterKnife.bind(this);
-        initView();
-    }
-
-    private void initView() {
+    protected void initView() {
+        super.initView();
         if (MyApplication.sUserInfo != null) {
             String str = MyApplication.sUserInfo.account.userName;
             mEtPhone.setText(str.substring(str.indexOf("_") + 1, str.length()));
@@ -111,9 +105,9 @@ public class LoginActivity extends BaseActivity {
         mBtnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mPhone = mEtPhone.getText().toString();
-                mPassword = mEtPassword.getText().toString();
-                if (!TextUtils.isEmpty(mPassword) && !TextUtils.isEmpty(mPhone)) {
+                sPhone = mEtPhone.getText().toString();
+                sPassword = mEtPassword.getText().toString();
+                if (!TextUtils.isEmpty(sPassword) && !TextUtils.isEmpty(sPhone)) {
                     checkAccount();
                 } else {
                     Utils.makeToast("请输入用户名和密码");
@@ -125,13 +119,23 @@ public class LoginActivity extends BaseActivity {
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
     }
 
+    @Override
+    protected int getLayoutResID() {
+        return R.layout.activity_login;
+    }
+
+    @Override
+    protected void initData() {
+
+    }
+
     /**
      * 验证账户信息，并获取账户头像昵称等保存到sp中
      */
     private void checkAccount() {
         HashMap<String, String> map = new HashMap<>();
-        map.put("phone", mPhone);
-        map.put("password", mPassword);
+        map.put("phone", sPhone);
+        map.put("password", sPassword);
         RequestParams params = new RequestParams(map);
 
         Request request = CommonRequest.createGetRequest(UrlUtils.LOGIN, params);

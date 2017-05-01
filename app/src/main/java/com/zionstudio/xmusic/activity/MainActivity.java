@@ -1,14 +1,13 @@
 package com.zionstudio.xmusic.activity;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -28,11 +27,12 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends BasePlayMusicActivity {
     private static final String TAG = "MainActivity";
-    private static ArrayList<Fragment> mFragmentList = new ArrayList<Fragment>();
-    private static FragmentManager mFM = null;
+    private static ArrayList<Fragment> sFragmentList = new ArrayList<Fragment>();
+    private static FragmentManager sFM = null;
     private static final int FRAGMENT_MUSIC = 0;
     private static final int FRAGMENT_DISCOVER = 1;
     @BindView(R.id.rl_drawer_bg)
@@ -61,43 +61,40 @@ public class MainActivity extends BaseActivity {
     DrawerLayout mDl;
     @BindView(R.id.ll_drawer)
     LinearLayout mLlDrawer;
-
+    @BindView(R.id.iv_cover_playing)
+    ImageView mIvCoverPlaying;
+    @BindView(R.id.tv_title_playing)
+    TextView mTvTitlePlaying;
+    @BindView(R.id.tv_artist_playing)
+    TextView mTvArtistPlaying;
+    @BindView(R.id.iv_playlistbutton)
+    ImageView mIvPlaylistbutton;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
-        Log.e(TAG, "TEST");
-        initData();
-        setUpDrawer();
-        initView();
-        initListener();
+    protected void initData() {
+        super.initData();
     }
 
-    private void initListener() {
-        //设置Drawer图标的点击事件
-        mIvDrawer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mDl.openDrawer(mLlDrawer);
-            }
-        });
+    @Override
+    protected int getLayoutResID() {
+        return R.layout.activity_main;
+    }
 
-        mIvToolbarMusic.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showMusicFragment();
-            }
-        });
-
-        mIvToolbarDiscover.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showDiscoverFragment();
-            }
-        });
-
+    @Override
+    protected void initView() {
+        super.initView();
+        //初始化Fragment和ViewPager
+        MusicFragment musicFragment = new MusicFragment();
+        DiscoverFragment discoverFragment = new DiscoverFragment();
+        sFragmentList.add(musicFragment);
+        sFragmentList.add(discoverFragment);
+        sFM = getSupportFragmentManager();
+        MyFragmentPagerAdapter adapter = new MyFragmentPagerAdapter(sFM, sFragmentList);
+        mVpContent.setAdapter(adapter);
+        showMusicFragment();
+        //初始化Drawer
+        setUpDrawer();
+        //设置Listener
         mVpContent.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -125,6 +122,15 @@ public class MainActivity extends BaseActivity {
     }
 
     /**
+     * 展示MusicFragment
+     */
+    private void showMusicFragment() {
+        mIvToolbarMusic.setSelected(true);
+        mIvToolbarDiscover.setSelected(false);
+        mVpContent.setCurrentItem(FRAGMENT_MUSIC);
+    }
+
+    /**
      * 初始化Drawer
      */
     private void setUpDrawer() {
@@ -141,33 +147,55 @@ public class MainActivity extends BaseActivity {
         mTvNicknam.setText(MyApplication.sUserInfo.profile.nickname);
     }
 
-    private void initData() {
-        //初始化Fragment和ViewPager
-        MusicFragment musicFragment = new MusicFragment();
-        DiscoverFragment discoverFragment = new DiscoverFragment();
-        mFragmentList.add(musicFragment);
-        mFragmentList.add(discoverFragment);
-        mFM = getSupportFragmentManager();
-        MyFragmentPagerAdapter adapter = new MyFragmentPagerAdapter(mFM, mFragmentList);
-        mVpContent.setAdapter(adapter);
-        showMusicFragment();
-    }
 
-    private void initView() {
-        //实现状态栏透明
-        getWindow().setStatusBarColor(Color.TRANSPARENT);
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-    }
-
-    private void showMusicFragment() {
-        mIvToolbarMusic.setSelected(true);
-        mIvToolbarDiscover.setSelected(false);
-        mVpContent.setCurrentItem(FRAGMENT_MUSIC);
-    }
-
+    /**
+     * 展示DiscoverFragment
+     */
     private void showDiscoverFragment() {
         mIvToolbarDiscover.setSelected(true);
         mIvToolbarMusic.setSelected(false);
         mVpContent.setCurrentItem(FRAGMENT_DISCOVER);
+    }
+
+    /**
+     * 各种按钮的点击事件
+     *
+     * @param v
+     */
+    @OnClick({R.id.iv_drawer, R.id.iv_toolbar_discover, R.id.iv_toolbar_music})
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.iv_drawer:
+                mDl.openDrawer(mLlDrawer);
+                break;
+            case R.id.iv_toolbar_music:
+                showMusicFragment();
+                break;
+            case R.id.iv_toolbar_discover:
+                showDiscoverFragment();
+                break;
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        updatePlayingBar();
+    }
+
+    /**
+     * 按返回键不退出，实现在后台继续播放
+     *
+     * @param keyCode
+     * @param event
+     * @return
+     */
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            moveTaskToBack(false);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

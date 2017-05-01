@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--自定义View RoundProgress的属性-->
+    <declare-styleable name="RoundProgress">
+        <attr name="roundColor" format="color"/>
+        <attr name="roundProgressColor" format="color"/>
+        <attr name="strokeWidth" format="dimension"/>
+        <attr name="state">
+            <enum name="playing" value="0"/>
+            <enum name="paused" value="1"/>
+        </attr>
+        <attr name="progress" format="fraction"/>
+    </declare-styleable>
+</resources>

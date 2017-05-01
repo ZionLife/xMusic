@@ -9,12 +9,24 @@
     tools:context="com.zionstudio.xmusic.activity.MainActivity"
     tools:openDrawer="start">
 
-    <include
-        android:id="@+id/layout_main"
-        layout="@layout/layout_main"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        />
+        >
+
+        <include
+            android:id="@+id/layout_main"
+            layout="@layout/layout_main"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+
+        <include
+            layout="@layout/view_playingbar"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_alignParentBottom="true"/>
+    </RelativeLayout>
 
     <include
         layout="@layout/layout_drawer"

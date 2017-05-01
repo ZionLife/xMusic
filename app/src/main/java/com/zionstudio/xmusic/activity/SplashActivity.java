@@ -35,20 +35,7 @@ public class SplashActivity extends BaseActivity {
     FrameLayout mFlSplash;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        //强制竖屏
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        //设置全屏
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.activity_splash);
-        ButterKnife.bind(this);
-//        skipToLoginActivity();
-        startAnim();
-        init();
-    }
-
-    private void init() {
+    protected void initData() {
         //初始化用户信息
         SharedPreferences userSP = getSharedPreferences("userSP", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = userSP.edit();
@@ -60,6 +47,18 @@ public class SplashActivity extends BaseActivity {
             MyApplication.sUserInfo = (UserInfo) Utils.String2Object(userInfo);
         }
     }
+
+    @Override
+    protected void initView() {
+        super.initView();
+        startAnim();
+    }
+
+    @Override
+    protected int getLayoutResID() {
+        return R.layout.activity_splash;
+    }
+
 
     private void startAnim() {
         AnimatorSet set = new AnimatorSet();

@@ -2,6 +2,9 @@ package com.zionstudio.xmusic.service;
 
 import android.app.Service;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
@@ -11,8 +14,10 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.zionstudio.xmusic.MyApplication;
+import com.zionstudio.xmusic.model.Song;
 import com.zionstudio.xmusic.util.Utils;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -24,32 +29,31 @@ public class PlayMusicService extends Service {
     public static final int PAUSE_MUSIC = 1;
     public static final int STOP_MUSIC = 2;
 
-    private boolean isStop = true;
+    private static boolean isStop = true;
+    private static boolean isPaused = false;
     private static final String TAG = "PlayMusicService";
-    private static MediaPlayer mPlayer;
+    private static MediaPlayer sPlayer;
     private static String playingPath = "";
-
-    private final IBinder mBinder = new PlayMusicBinder();
+    private Song playingSong;
+    private final IBinder sBinder = new PlayMusicBinder();
+    private static Bitmap sCover;
+    private MediaMetadataRetriever sRetriver;
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return mBinder;
+        return sBinder;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
         Log.e(TAG, "on PlayMusicService create");
-        if (mPlayer == null) {
-            mPlayer = new MediaPlayer();
-            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+        if (sPlayer == null) {
+            sPlayer = new MediaPlayer();
+            sPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
-//                    Intent intent = new Intent();
-//                    intent.setAction("com.complete");
-//                    sendBroadcast(intent);
-                    Utils.makeToast("音乐播放结束");
                     playingPath = "";
                 }
             });
@@ -64,18 +68,25 @@ public class PlayMusicService extends Service {
     /**
      * 播放音乐
      *
-     * @param path 音乐文件的路径
+     * @param song 要播放的音乐
      */
-    public void playMusic(String path) {
-        if (!mPlayer.isPlaying() || !path.equals(playingPath)) {
-            mPlayer.reset();
+    public void playMusic(Song song) {
+        String path = song.path;
+        if (!sPlayer.isPlaying() || !path.equals(playingPath)) {
+            sPlayer.reset();
             try {
-                mPlayer.setDataSource(path);
-                mPlayer.prepare();
-                mPlayer.setLooping(false);
-                mPlayer.start();
-                Log.e(TAG, "on playing Music:" + path);
+                sPlayer.setDataSource(path);
+                sPlayer.prepare();
+                sPlayer.setLooping(false);
+                sPlayer.start();
+                //回收Bitmap
+                if (sCover != null) {
+                    sCover.recycle();
+                }
+                isPaused = false;
+                playingSong = song;
                 playingPath = path;
+                loadCover();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -86,8 +97,9 @@ public class PlayMusicService extends Service {
      * 暂停播放音乐
      */
     public void pauseMusic() {
-        if (mPlayer.isPlaying()) {
-            mPlayer.pause();
+        if (sPlayer.isPlaying()) {
+            sPlayer.pause();
+            isPaused = true;
         }
     }
 
@@ -95,8 +107,8 @@ public class PlayMusicService extends Service {
      * 停止播放音乐
      */
     public void stopMusic() {
-        if (mPlayer.isPlaying()) {
-            mPlayer.stop();
+        if (sPlayer.isPlaying()) {
+            sPlayer.stop();
         }
     }
 
@@ -104,7 +116,8 @@ public class PlayMusicService extends Service {
      * 继续播放音乐
      */
     public void startMusic() {
-        mPlayer.start();
+        sPlayer.start();
+        isPaused = false;
     }
 
     /**
@@ -113,7 +126,11 @@ public class PlayMusicService extends Service {
      * @return 正在播放音乐返回true，否则返回false
      */
     public boolean isPlaying() {
-        return mPlayer.isPlaying();
+        return sPlayer.isPlaying();
+    }
+
+    public boolean isPaused() {
+        return isPaused;
     }
 
     /**
@@ -125,11 +142,49 @@ public class PlayMusicService extends Service {
         return playingPath;
     }
 
+    /**
+     * 获取播放的歌曲
+     */
+    public Song getPlayingSong() {
+        return playingSong;
+    }
+
+    /**
+     * 获取正在播放的歌曲的封面
+     */
+    public Bitmap getCover() {
+        if (sPlayer.isPlaying() || isPaused) {
+            return sCover;
+        }
+        return null;
+    }
+
+    /**
+     * 加载正在播放的歌曲的封面
+     */
+    private void loadCover() {
+        File f = new File(playingPath);
+        sRetriver = new MediaMetadataRetriever();
+        sRetriver.setDataSource(playingPath);
+        byte[] cover = sRetriver.getEmbeddedPicture();
+        if (cover != null) {
+            sCover = BitmapFactory.decodeByteArray(cover, 0, cover.length);
+            sRetriver.release();
+        }
+    }
+
+    public float getProgress() {
+        if (sPlayer != null && (sPlayer.isPlaying() || isPaused)) {
+            return sPlayer.getCurrentPosition() / (float) sPlayer.getDuration();
+        }
+        return 0f;
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         //释放MediaPlayer
-        mPlayer.release();
+        sPlayer.release();
     }
 
     public class PlayMusicBinder extends Binder {

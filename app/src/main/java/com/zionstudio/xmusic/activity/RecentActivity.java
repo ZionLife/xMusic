@@ -7,4 +7,13 @@ import android.support.v4.app.ActivityCompat;
  */
 
 public class RecentActivity extends BaseActivity {
+    @Override
+    protected int getLayoutResID() {
+        return 0;
+    }
+
+    @Override
+    protected void initData() {
+
+    }
 }

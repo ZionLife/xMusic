@@ -124,7 +124,7 @@ public class Utils {
     /**
      * 搜索本地音乐
      */
-    public static List<Song> getAllMediaList(Context context, String where) {
+    public static List<Song> getAllMediaList(Context context) {
         Cursor cursor = null;
         List<Song> mediaList = null;
         try {
