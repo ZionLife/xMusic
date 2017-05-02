@@ -180,7 +180,6 @@ public class MainActivity extends BasePlayMusicActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        updatePlayingBar();
     }
 
     /**

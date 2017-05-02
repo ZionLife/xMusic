@@ -21,8 +21,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Administrator on 2017/4/21 0021.
@@ -57,7 +55,7 @@ public class Utils {
      * @param str
      */
     public static void makeToast(String str) {
-        Toast.makeText(MyApplication.mContext, str, Toast.LENGTH_SHORT).show();
+        Toast.makeText(MyApplication.sContext, str, Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -126,7 +124,7 @@ public class Utils {
      */
     public static List<Song> getAllMediaList(Context context) {
         Cursor cursor = null;
-        List<Song> mediaList = null;
+        List<Song> mediaList = new ArrayList<Song>();
         try {
             cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     null, null, null, MediaStore.Audio.AudioColumns.IS_MUSIC);

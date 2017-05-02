@@ -3,26 +3,30 @@ package com.zionstudio.xmusic.view;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
 import android.graphics.RectF;
-import android.support.annotation.BoolRes;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 
+import com.zionstudio.xmusic.MyApplication;
 import com.zionstudio.xmusic.R;
 
-
 /**
- * Created by Administrator on 2017/5/1 0001.
+ * 作废
+ * Created by Administrator on 2017/5/2 0002.
  */
 
-public class RoundProgress extends View {
-    private static final String TAG = "RoundProgress";
+public class PlayButton extends SurfaceView implements SurfaceHolder.Callback, Runnable {
+    private static final String TAG = "PlayButton";
+    private Thread mThread;
 
     //定义一个注解
     @IntDef({PLAYING_STATE, PAUSED_STATE})
@@ -33,50 +37,100 @@ public class RoundProgress extends View {
     public static final int PAUSED_STATE = 1;
     private int mRoundColor;
     private int mRoundProgressColor;
-
-    private static int sPlayingRoundColor;
-    private static int sPausedRoundColor;
-    private static int sProgressColor;
-
+    private int sPlayingRoundColor;
+    private int sPausedRoundColor;
+    private int sProgressColor;
     private float mStrokeWidth;
-    private static Paint sPaint;
+    private Paint sPaint;
     @PlayerState
     private int mState;
-
     private float mProgress = 0;
 
-    public RoundProgress(Context context) {
+
+    private SurfaceHolder mHolder;
+    private Canvas mCanvas;
+    private boolean mIsRunning;
+
+    public PlayButton(Context context) {
         this(context, null);
-        Log.e(TAG, "111");
     }
 
-    public RoundProgress(Context context, @Nullable AttributeSet attrs) {
+    public PlayButton(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
+
     }
 
-    public RoundProgress(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public PlayButton(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.RoundProgress);
-        mRoundColor = ta.getColor(R.styleable.RoundProgress_roundColor, context.getResources().getColor(R.color.colorBtnBottomLine));
-        mRoundProgressColor = ta.getColor(R.styleable.RoundProgress_roundProgressColor, context.getResources().getColor(R.color.colorPrimary));
-        mStrokeWidth = ta.getDimension(R.styleable.RoundProgress_strokeWidth, 5F);
-        mState = ta.getInt(R.styleable.RoundProgress_state, 0) == 0 ? PLAYING_STATE : PAUSED_STATE;
+//        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.PlayButton);
+//        mRoundColor = ta.getColor(R.styleable.PlayButton_roundColor, context.getResources().getColor(R.color.colorBtnBottomLine));
+//        mRoundProgressColor = ta.getColor(R.styleable.PlayButton_roundProgressColor, context.getResources().getColor(R.color.colorPrimary));
+//        mStrokeWidth = ta.getDimension(R.styleable.PlayButton_strokeWidth, 5F);
+//        mState = ta.getInt(R.styleable.PlayButton_state, 0) == 0 ? PLAYING_STATE : PAUSED_STATE;
+//        sPaint = new Paint();
+//        sPlayingRoundColor = context.getResources().getColor(R.color.colorBtnBottomLine);
+//        sPausedRoundColor = context.getResources().getColor(R.color.black);
+//        sProgressColor = context.getResources().getColor(R.color.colorPrimary);
+//        init();
+    }
 
-        sPaint = new Paint();
-        sPlayingRoundColor = context.getResources().getColor(R.color.colorBtnBottomLine);
-        sPausedRoundColor = context.getResources().getColor(R.color.black);
-        sProgressColor = context.getResources().getColor(R.color.colorPrimary);
+    private void init() {
+        mHolder = getHolder();
+        mHolder.addCallback(this);
+        setZOrderOnTop(true);
+        getHolder().setFormat(PixelFormat.TRANSLUCENT);
+
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        switch (mState) {
-            case PLAYING_STATE:
-                drawPlayingButton(canvas);
-                break;
-            case PAUSED_STATE:
-                drawPausedButton(canvas);
+    public void surfaceCreated(SurfaceHolder holder) {
+        mIsRunning = true;
+        Log.e(TAG, "surfaceCreated in thread :" + Thread.currentThread().getId());
+        mThread = new Thread(this);
+        mThread.start();
+//        if(MyApplication.sPlayButtonThread != null){
+//            MyApplication.sPlayButtonThread.stop();
+//        }
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        mIsRunning = false;
+        mThread.interrupt();
+    }
+
+    @Override
+    public void run() {
+        long start = System.currentTimeMillis();
+        draw();
+//        while (mIsRunning) {
+//            draw();
+//        }
+    }
+
+    public void draw() {
+        mCanvas = mHolder.lockCanvas();
+        if (mCanvas != null) {
+            mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            try {
+                switch (mState) {
+                    case PLAYING_STATE:
+                        drawPlayingButton(mCanvas);
+                        break;
+                    case PAUSED_STATE:
+                        drawPausedButton(mCanvas);
+                        break;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                mHolder.unlockCanvasAndPost(mCanvas);
+            }
         }
     }
 
@@ -86,6 +140,7 @@ public class RoundProgress extends View {
      * @param canvas
      */
     private void drawPausedButton(Canvas canvas) {
+        Log.e(TAG, "draw PausedButton in thread :" + Thread.currentThread().getId());
         drawCircleBg(canvas, PAUSED_STATE);
         //绘制三角形
         int center = getWidth() / 2;
@@ -113,6 +168,7 @@ public class RoundProgress extends View {
      * @param canvas
      */
     private void drawPlayingButton(Canvas canvas) {
+        Log.e(TAG, "draw PlayingButton in thread :" + Thread.currentThread().getId());
         drawCircleBg(canvas, PLAYING_STATE);
         //绘制双竖线
         int center = getWidth() / 2;
@@ -186,6 +242,10 @@ public class RoundProgress extends View {
         if (progress >= 0 && progress <= 1) {
             mProgress = progress;
         }
-        postInvalidate();
+        draw();
     }
+
+//    public void doDraw() {
+//        draw();
+//    }
 }

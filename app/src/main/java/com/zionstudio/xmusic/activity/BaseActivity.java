@@ -32,6 +32,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     /**
      * 获取contentView的资源ID
+     *
      * @return
      */
     protected abstract int getLayoutResID();

@@ -47,8 +47,8 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
     ImageView mIvPlaylistbutton;
     @BindView(R.id.rp_playbutton)
     RoundProgress mRpPlaybutton;
-    @BindView(R.id.rl_palybutton)
-    RelativeLayout mRlPalybutton;
+    @BindView(R.id.rl_playbutton)
+    RelativeLayout mRlPlaybutton;
 
     protected void initData() {
         //初始化ServiceConnection
@@ -71,16 +71,16 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
     protected void initView() {
         super.initView();
         sPlayingBar = this.getLayoutInflater().inflate(R.layout.view_playingbar, null, false);
-
-        mRlPalybutton.setOnClickListener(new View.OnClickListener() {
+        mRlPlaybutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mRpPlaybutton.getState() == RoundProgress.PLAYING_STATE) {
-                    mRpPlaybutton.doInvalidate();
+                if (sService != null && sService.isPlaying()) {
                     sService.pauseMusic();
+                    updateProgress();
+
                 } else if (sService.isPaused()) {
-                    mRpPlaybutton.doInvalidate();
                     sService.startMusic();
+                    updateProgress();
                 }
             }
         });
@@ -98,7 +98,6 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
      * 更新进度条
      */
     private void updateProgress() {
-//        Log.e(TAG, "run in thread: " + Thread.currentThread().getId());
         if (sService == null) {
             return;
         }
@@ -125,20 +124,21 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
      * 更新状态栏
      */
     protected void updatePlayingBar() {
+        updateProgress();
         if (sService != null && (sService.isPlaying() || sService.isPaused())) {
             Song s = sService.getPlayingSong();
             //给状态栏设置歌曲名和歌手
             mTvTitlePlaying.setText(s.title);
+            mTvArtistPlaying.setVisibility(View.VISIBLE);
             mTvArtistPlaying.setText(s.artist);
             //获取专辑封面并设置到状态栏
             Bitmap cover = sService.getCover();
             if (cover != null) {
                 mIvCoverPlaying.setImageBitmap(cover);
             } else {
-                mIvCoverPlaying.setImageResource(R.mipmap.ic_launcher);
+                mIvCoverPlaying.setImageResource(R.drawable.default_cover);
             }
         }
-
     }
 
     @Override

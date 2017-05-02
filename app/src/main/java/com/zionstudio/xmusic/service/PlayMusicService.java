@@ -83,6 +83,7 @@ public class PlayMusicService extends Service {
                 if (sCover != null) {
                     sCover.recycle();
                 }
+                sCover = null;
                 isPaused = false;
                 playingSong = song;
                 playingPath = path;

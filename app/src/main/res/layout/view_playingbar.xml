@@ -16,7 +16,7 @@
             android:layout_width="45dp"
             android:layout_height="match_parent"
             android:padding="5dp"
-            android:src="@mipmap/ic_launcher"/>
+            android:src="@drawable/default_cover"/>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -31,7 +31,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:maxLines="1"
-                android:text="当爱已成往事(霸王别姬 电影插曲)"
+                android:text="播放列表为空"
                 android:textColor="@color/black"
                 android:textSize="13sp"
                 />
@@ -41,25 +41,35 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:maxLines="1"
-                android:text="张国荣"
-                android:textSize="11sp"/>
+                android:text=""
+                android:textSize="11sp"
+                android:visibility="gone"/>
         </LinearLayout>
 
         <RelativeLayout
-            android:id="@+id/rl_palybutton"
+            android:id="@+id/rl_playbutton"
             android:layout_width="48dp"
             android:layout_height="match_parent"
             android:clickable="true"
             android:foreground="?android:attr/selectableItemBackgroundBorderless"
-            android:gravity="center">
+            android:gravity="center"
+            android:padding="5dp">
 
             <com.zionstudio.xmusic.view.RoundProgress
-                android:id="@+id/rp_playbutton"
-                android:layout_width="27dp"
-                android:layout_height="27dp"
-                android:layout_gravity="center_vertical"
-                app:state="paused"
-                app:strokeWidth="1.3dp"/>
+            android:id="@+id/rp_playbutton"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center_vertical"
+            app:state="paused"
+            app:strokeWidth="1.2dp"/>
+
+            <!--<com.zionstudio.xmusic.view.PlayButton-->
+                <!--android:id="@+id/rp_playbutton"-->
+                <!--android:layout_width="28dp"-->
+                <!--android:layout_height="28dp"-->
+                <!--android:layout_gravity="center_vertical"-->
+                <!--app:state="paused"-->
+                <!--app:strokeWidth="1.2dp"/>-->
         </RelativeLayout>
 
 
@@ -67,8 +77,10 @@
             android:id="@+id/iv_playlistbutton"
             android:layout_width="40dp"
             android:layout_height="match_parent"
+            android:layout_marginRight="3dp"
+            android:clickable="true"
             android:foreground="?android:attr/selectableItemBackground"
-            android:src="@drawable/playbar_playlist"
-            android:tint="@color/black"/>
+            android:padding="8dp"
+            android:src="@drawable/playbar_playlist"/>
     </LinearLayout>
 </LinearLayout>

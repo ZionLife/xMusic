@@ -12,4 +12,15 @@
         </attr>
         <attr name="progress" format="fraction"/>
     </declare-styleable>
+
+    <!--<declare-styleable name="PlayButton">-->
+        <!--<attr name="roundColor" format="color"/>-->
+        <!--<attr name="roundProgressColor" format="color"/>-->
+        <!--<attr name="strokeWidth" format="dimension"/>-->
+        <!--<attr name="state">-->
+            <!--<enum name="playing" value="0"/>-->
+            <!--<enum name="paused" value="1"/>-->
+        <!--</attr>-->
+        <!--<attr name="progress" format="fraction"/>-->
+    <!--</declare-styleable>-->
 </resources>
