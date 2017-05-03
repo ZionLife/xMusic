@@ -146,10 +146,10 @@ public class LocalSongsActivity extends BasePlayMusicActivity {
                     if (!sService.getPlayingPath().equals(path)) {
                         //开始播放音乐
                         sService.playMusic(s);
-                        //更新状态栏
-                        updatePlayingBar();
+//                        //更新状态栏
+//                        updatePlayingBar();
                     } else if (sService.isPaused()) {
-                        sService.startMusic();
+                        sService.continueMusic();
                     }
                 }
             }

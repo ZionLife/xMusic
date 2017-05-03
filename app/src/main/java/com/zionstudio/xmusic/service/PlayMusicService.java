@@ -55,6 +55,9 @@ public class PlayMusicService extends Service {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
                     playingPath = "";
+                    Intent intent = new Intent("com.zionstudio.xmusic.playstate");
+                    intent.putExtra("type", "end");
+                    sendBroadcast(intent);
                 }
             });
         }
@@ -88,6 +91,9 @@ public class PlayMusicService extends Service {
                 playingSong = song;
                 playingPath = path;
                 loadCover();
+                Intent intent = new Intent("com.zionstudio.xmusic.playstate");
+                intent.putExtra("type", "start");
+                sendBroadcast(intent);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -101,6 +107,9 @@ public class PlayMusicService extends Service {
         if (sPlayer.isPlaying()) {
             sPlayer.pause();
             isPaused = true;
+            Intent intent = new Intent("com.zionstudio.xmusic.playstate");
+            intent.putExtra("type", "paused");
+            sendBroadcast(intent);
         }
     }
 
@@ -110,15 +119,21 @@ public class PlayMusicService extends Service {
     public void stopMusic() {
         if (sPlayer.isPlaying()) {
             sPlayer.stop();
+            Intent intent = new Intent("com.zionstudio.xmusic.playstate");
+            intent.putExtra("type", "stop");
+            sendBroadcast(intent);
         }
     }
 
     /**
      * 继续播放音乐
      */
-    public void startMusic() {
+    public void continueMusic() {
         sPlayer.start();
         isPaused = false;
+        Intent intent = new Intent("com.zionstudio.xmusic.playstate");
+        intent.putExtra("type", "continue");
+        sendBroadcast(intent);
     }
 
     /**

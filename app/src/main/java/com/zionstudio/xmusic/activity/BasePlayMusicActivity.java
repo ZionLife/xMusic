@@ -1,10 +1,14 @@
 package com.zionstudio.xmusic.activity;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
@@ -50,6 +54,11 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
     @BindView(R.id.rl_playbutton)
     RelativeLayout mRlPlaybutton;
 
+    private PlayStateReceiver mReceiver;
+    private Handler mHandler = new Handler();
+    private Runnable mRunnable;
+    private boolean needUpdateProgress = false;
+
     protected void initData() {
         //初始化ServiceConnection
         sConnection = new ServiceConnection() {
@@ -65,6 +74,21 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
         };
         //绑定服务
         bindService(new Intent(this, PlayMusicService.class), sConnection, BIND_AUTO_CREATE);
+        //注册广播接收者
+        mReceiver = new PlayStateReceiver();
+        IntentFilter filter = new IntentFilter("com.zionstudio.xmusic.playstate");
+        registerReceiver(mReceiver, filter);
+
+        mRunnable = new Runnable() {
+            @Override
+            public void run() {
+                updateProgress();
+                if (needUpdateProgress) {
+                    Log.e(TAG, "需要更新");
+                    mHandler.postDelayed(this, 1000);
+                }
+            }
+        };
     }
 
     @Override
@@ -76,22 +100,11 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
             public void onClick(View v) {
                 if (sService != null && sService.isPlaying()) {
                     sService.pauseMusic();
-                    updateProgress();
-
                 } else if (sService.isPaused()) {
-                    sService.startMusic();
-                    updateProgress();
+                    sService.continueMusic();
                 }
             }
         });
-        sTimerTask = new TimerTask() {
-            @Override
-            public void run() {
-                updateProgress();
-            }
-        };
-        sTimer = new Timer();
-        sTimer.scheduleAtFixedRate(sTimerTask, 0, 1000);
     }
 
     /**
@@ -103,14 +116,12 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
         }
         if (sService.isPlaying()) {
             mRpPlaybutton.setState(RoundProgress.PLAYING_STATE);
-            mRpPlaybutton.setProgress(sService.getProgress());
-        } else if (sService.isPaused()) {
-            mRpPlaybutton.setState(RoundProgress.PAUSED_STATE);
-            mRpPlaybutton.setProgress(sService.getProgress());
+//            needUpdateProgress = true;
         } else {
             mRpPlaybutton.setState(RoundProgress.PAUSED_STATE);
-            mRpPlaybutton.setProgress(0);
+//            needUpdateProgress = false;
         }
+        mRpPlaybutton.setProgress(sService.getProgress());
     }
 
     @Override
@@ -118,26 +129,39 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
         super.onStart();
         //activity每次可见时都更新状态栏
         updatePlayingBar();
+        mHandler.post(mRunnable);
+        //如果正在播放音乐则需要循环更新进度，置needUpdateProgress为true
+        if (sService != null && sService.isPlaying()) {
+            needUpdateProgress = true;
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        needUpdateProgress = false;
     }
 
     /**
      * 更新状态栏
      */
     protected void updatePlayingBar() {
-        updateProgress();
-        if (sService != null && (sService.isPlaying() || sService.isPaused())) {
-            Song s = sService.getPlayingSong();
-            //给状态栏设置歌曲名和歌手
-            mTvTitlePlaying.setText(s.title);
-            mTvArtistPlaying.setVisibility(View.VISIBLE);
-            mTvArtistPlaying.setText(s.artist);
-            //获取专辑封面并设置到状态栏
-            Bitmap cover = sService.getCover();
-            if (cover != null) {
-                mIvCoverPlaying.setImageBitmap(cover);
-            } else {
-                mIvCoverPlaying.setImageResource(R.drawable.default_cover);
+        if (sService != null) {
+            if (sService.isPlaying()) {
+                Song s = sService.getPlayingSong();
+                //给状态栏设置歌曲名和歌手
+                mTvTitlePlaying.setText(s.title);
+                mTvArtistPlaying.setVisibility(View.VISIBLE);
+                mTvArtistPlaying.setText(s.artist);
+                //获取专辑封面并设置到状态栏
+                Bitmap cover = sService.getCover();
+                if (cover != null) {
+                    mIvCoverPlaying.setImageBitmap(cover);
+                } else {
+                    mIvCoverPlaying.setImageResource(R.drawable.default_cover);
+                }
             }
+            updateProgress();
         }
     }
 
@@ -146,7 +170,7 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
         super.onDestroy();
         //解绑服务
         unbindService(sConnection);
-        Log.e(TAG, "on Destroy");
+        unregisterReceiver(mReceiver);
     }
 
     @Override
@@ -154,5 +178,37 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         // TODO: add setContentView(...) invocation
         ButterKnife.bind(this);
+    }
+
+    class PlayStateReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String type = intent.getStringExtra("type");
+            switch (type) {
+                case "start":
+                    BasePlayMusicActivity.this.updatePlayingBar();
+                    mHandler.post(mRunnable);
+                    needUpdateProgress = true;
+                    break;
+                case "paused":
+                    BasePlayMusicActivity.this.updatePlayingBar();
+                    needUpdateProgress = false;
+                    break;
+                case "continue":
+                    BasePlayMusicActivity.this.updatePlayingBar();
+                    needUpdateProgress = true;
+                    mHandler.post(mRunnable);
+                    break;
+                case "stop":
+                    break;
+                case "end":
+                    Log.e(TAG, "播放结束");
+                    mTvTitlePlaying.setText("播放列表为空");
+                    mTvArtistPlaying.setVisibility(View.GONE);
+                    mIvCoverPlaying.setImageResource(R.drawable.default_cover);
+                    needUpdateProgress = false;
+                    break;
+            }
+        }
     }
 }
