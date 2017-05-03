@@ -1,86 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:id="@+id/ll_playbar"
               android:layout_width="match_parent"
               android:layout_height="48dp"
               android:background="@color/white"
-              android:orientation="vertical">
+              android:clickable="true"
+              android:orientation="horizontal">
+
+    <ImageView
+        android:id="@+id/iv_cover_playing"
+        android:layout_width="45dp"
+        android:layout_height="match_parent"
+        android:padding="5dp"
+        android:src="@drawable/default_cover"/>
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="5dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/iv_cover_playing"
-            android:layout_width="45dp"
-            android:layout_height="match_parent"
-            android:padding="5dp"
-            android:src="@drawable/default_cover"/>
+        <TextView
+            android:id="@+id/tv_title_playing"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:text="播放列表为空"
+            android:textColor="@color/black"
+            android:textSize="13sp"
+            />
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="5dp"
-            android:layout_weight="1"
-            android:gravity="center_vertical"
-            android:orientation="vertical">
+        <TextView
+            android:id="@+id/tv_artist_playing"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:text=""
+            android:textSize="11sp"
+            android:visibility="gone"/>
+    </LinearLayout>
 
-            <TextView
-                android:id="@+id/tv_title_playing"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:maxLines="1"
-                android:text="播放列表为空"
-                android:textColor="@color/black"
-                android:textSize="13sp"
-                />
+    <RelativeLayout
+        android:id="@+id/rl_playbutton"
+        android:layout_width="48dp"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:foreground="?android:attr/selectableItemBackgroundBorderless"
+        android:gravity="center"
+        android:padding="5dp">
 
-            <TextView
-                android:id="@+id/tv_artist_playing"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:maxLines="1"
-                android:text=""
-                android:textSize="11sp"
-                android:visibility="gone"/>
-        </LinearLayout>
-
-        <RelativeLayout
-            android:id="@+id/rl_playbutton"
-            android:layout_width="48dp"
-            android:layout_height="match_parent"
-            android:clickable="true"
-            android:foreground="?android:attr/selectableItemBackgroundBorderless"
-            android:gravity="center"
-            android:padding="5dp">
-
-            <com.zionstudio.xmusic.view.RoundProgress
+        <com.zionstudio.xmusic.view.RoundProgress
             android:id="@+id/rp_playbutton"
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:layout_gravity="center_vertical"
             app:state="paused"
             app:strokeWidth="1.2dp"/>
-
-            <!--<com.zionstudio.xmusic.view.PlayButton-->
-                <!--android:id="@+id/rp_playbutton"-->
-                <!--android:layout_width="28dp"-->
-                <!--android:layout_height="28dp"-->
-                <!--android:layout_gravity="center_vertical"-->
-                <!--app:state="paused"-->
-                <!--app:strokeWidth="1.2dp"/>-->
-        </RelativeLayout>
+    </RelativeLayout>
 
 
-        <ImageView
-            android:id="@+id/iv_playlistbutton"
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:layout_marginRight="3dp"
-            android:clickable="true"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:padding="8dp"
-            android:src="@drawable/playbar_playlist"/>
-    </LinearLayout>
+    <ImageView
+        android:id="@+id/iv_playlistbutton"
+        android:layout_width="40dp"
+        android:layout_height="match_parent"
+        android:layout_marginRight="3dp"
+        android:clickable="true"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:padding="8dp"
+        android:src="@drawable/playbar_playlist"/>
 </LinearLayout>

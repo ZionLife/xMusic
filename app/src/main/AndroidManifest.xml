@@ -34,9 +34,14 @@
             android:windowSoftInputMode="adjustPan"
             />
 
-        <service android:name=".service.PlayMusicService"
-            android:exported="true"
-            android:enabled="true"/>
+        <activity
+            android:name=".activity.PlayDetailActivity"
+            android:screenOrientation="portrait"/>
+
+        <service
+            android:name=".service.PlayMusicService"
+            android:enabled="true"
+            android:exported="true"/>
     </application>
 
 </manifest>

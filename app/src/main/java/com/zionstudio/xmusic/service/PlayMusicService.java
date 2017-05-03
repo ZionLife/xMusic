@@ -96,6 +96,9 @@ public class PlayMusicService extends Service {
                 sendBroadcast(intent);
             } catch (IOException e) {
                 e.printStackTrace();
+                Intent intent = new Intent("com.zionstudio.xmusic.playstate");
+                intent.putExtra("type", "end");
+                sendBroadcast(intent);
             }
         }
     }

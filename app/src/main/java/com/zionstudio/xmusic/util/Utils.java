@@ -143,9 +143,9 @@ public class Utils {
                 s = new Song();
                 s.duration = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
                 s.size = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.SIZE));
-
-                //检查是否会小于1分钟或者小于1Mb
-                if ((s.duration / 60 <= 0) && (s.size < 1024 * 1024)) {
+                s.path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                //检查是否会小于1分钟或者小于1Mb，且过滤掉.flac文件（系统MediaPlayer对.flac支持不好，以后用开源库替换）
+                if ((s.duration / 60 <= 0) && (s.size < 1024 * 1024) || s.path.contains(".flac")) {
                     continue;
                 }
 

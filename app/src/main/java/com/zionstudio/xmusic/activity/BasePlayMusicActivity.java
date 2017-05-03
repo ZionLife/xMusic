@@ -13,6 +13,7 @@ import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -26,6 +27,7 @@ import java.util.TimerTask;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * Base activity for all activities playing music.
@@ -53,26 +55,34 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
     RoundProgress mRpPlaybutton;
     @BindView(R.id.rl_playbutton)
     RelativeLayout mRlPlaybutton;
+    @BindView(R.id.ll_playbar)
+    LinearLayout mLlPlaybar;
 
     private PlayStateReceiver mReceiver;
     private Handler mHandler = new Handler();
     private Runnable mRunnable;
     private boolean needUpdateProgress = false;
+    private ServiceConnection mConn = null;
 
     protected void initData() {
-        //初始化ServiceConnection
-        sConnection = new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-                sService = ((PlayMusicService.PlayMusicBinder) service).getService();
-            }
 
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-                sService = null;
-            }
-        };
-        //绑定服务
+        //初始化ServiceConnection
+        if (sConnection == null) {
+            sConnection = new ServiceConnection() {
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    if (sService == null) {
+                        sService = ((PlayMusicService.PlayMusicBinder) service).getService();
+                    }
+                }
+
+                @Override
+                public void onServiceDisconnected(ComponentName name) {
+                    sService = null;
+                }
+            };
+            mConn = sConnection;
+        }
         bindService(new Intent(this, PlayMusicService.class), sConnection, BIND_AUTO_CREATE);
         //注册广播接收者
         mReceiver = new PlayStateReceiver();
@@ -84,7 +94,6 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
             public void run() {
                 updateProgress();
                 if (needUpdateProgress) {
-                    Log.e(TAG, "需要更新");
                     mHandler.postDelayed(this, 1000);
                 }
             }
@@ -95,16 +104,6 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
     protected void initView() {
         super.initView();
         sPlayingBar = this.getLayoutInflater().inflate(R.layout.view_playingbar, null, false);
-        mRlPlaybutton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (sService != null && sService.isPlaying()) {
-                    sService.pauseMusic();
-                } else if (sService.isPaused()) {
-                    sService.continueMusic();
-                }
-            }
-        });
     }
 
     /**
@@ -114,14 +113,16 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
         if (sService == null) {
             return;
         }
-        if (sService.isPlaying()) {
-            mRpPlaybutton.setState(RoundProgress.PLAYING_STATE);
+        if (mRpPlaybutton != null) {
+            if (sService.isPlaying()) {
+                mRpPlaybutton.setState(RoundProgress.PLAYING_STATE);
 //            needUpdateProgress = true;
-        } else {
-            mRpPlaybutton.setState(RoundProgress.PAUSED_STATE);
+            } else {
+                mRpPlaybutton.setState(RoundProgress.PAUSED_STATE);
 //            needUpdateProgress = false;
+            }
+            mRpPlaybutton.setProgress(sService.getProgress());
         }
-        mRpPlaybutton.setProgress(sService.getProgress());
     }
 
     @Override
@@ -169,6 +170,11 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         //解绑服务
+        if (mConn == sConnection) {
+            Log.e(TAG, "equal");
+        } else {
+            Log.e(TAG, "not equal");
+        }
         unbindService(sConnection);
         unregisterReceiver(mReceiver);
     }
@@ -178,6 +184,21 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         // TODO: add setContentView(...) invocation
         ButterKnife.bind(this);
+    }
+
+    @OnClick({R.id.rl_playbutton, R.id.ll_playbar})
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.rl_playbutton:
+                if (sService != null && sService.isPlaying()) {
+                    sService.pauseMusic();
+                } else if (sService.isPaused()) {
+                    sService.continueMusic();
+                }
+                break;
+            case R.id.ll_playbar:
+                startActivity(new Intent(BasePlayMusicActivity.this, PlayDetailActivity.class));
+        }
     }
 
     class PlayStateReceiver extends BroadcastReceiver {
@@ -202,7 +223,6 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
                 case "stop":
                     break;
                 case "end":
-                    Log.e(TAG, "播放结束");
                     mTvTitlePlaying.setText("播放列表为空");
                     mTvArtistPlaying.setVisibility(View.GONE);
                     mIvCoverPlaying.setImageResource(R.drawable.default_cover);

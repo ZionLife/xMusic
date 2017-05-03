@@ -103,7 +103,6 @@ public class MainActivity extends BasePlayMusicActivity {
 
             @Override
             public void onPageSelected(int position) {
-                Log.e(TAG, "onPageSelected");
                 switch (position) {
                     case FRAGMENT_MUSIC:
                         showMusicFragment();
@@ -135,9 +134,22 @@ public class MainActivity extends BasePlayMusicActivity {
      */
     private void setUpDrawer() {
         //设置头像
-        Picasso.with(this).load(MyApplication.sUserInfo.profile.avatarUrl)
-                .transform(new CircleTransform())
-                .into(mSdvAvatar);
+        try {
+            Picasso.with(this).load(MyApplication.sUserInfo.profile.avatarUrl)
+                    .transform(new CircleTransform())
+                    .into(mSdvAvatar);
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (MyApplication.sUserInfo == null) {
+                Log.e(TAG, "sUserInfo == null");
+            }
+            if (MyApplication.sUserInfo.profile == null) {
+                Log.e(TAG, "profile == null");
+            }
+            if (MyApplication.sUserInfo.profile.avatarUrl == null) {
+                Log.e(TAG, "avatarUrl == null");
+            }
+        }
         //设置背景，调整图片亮度
         Picasso.with(this).load(MyApplication.sUserInfo.profile.backgroundUrl)
                 .transform(new ShadowTransform(-80))
@@ -155,26 +167,6 @@ public class MainActivity extends BasePlayMusicActivity {
         mIvToolbarDiscover.setSelected(true);
         mIvToolbarMusic.setSelected(false);
         mVpContent.setCurrentItem(FRAGMENT_DISCOVER);
-    }
-
-    /**
-     * 各种按钮的点击事件
-     *
-     * @param v
-     */
-    @OnClick({R.id.iv_drawer, R.id.iv_toolbar_discover, R.id.iv_toolbar_music})
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.iv_drawer:
-                mDl.openDrawer(mLlDrawer);
-                break;
-            case R.id.iv_toolbar_music:
-                showMusicFragment();
-                break;
-            case R.id.iv_toolbar_discover:
-                showDiscoverFragment();
-                break;
-        }
     }
 
     @Override
@@ -196,5 +188,26 @@ public class MainActivity extends BasePlayMusicActivity {
             return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    /**
+     * 各种按钮的点击事件
+     *
+     * @param v
+     */
+    @OnClick({R.id.iv_drawer, R.id.iv_toolbar_discover, R.id.iv_toolbar_music})
+    public void onClick(View v) {
+        super.onClick(v);
+        switch (v.getId()) {
+            case R.id.iv_drawer:
+                mDl.openDrawer(mLlDrawer);
+                break;
+            case R.id.iv_toolbar_music:
+                showMusicFragment();
+                break;
+            case R.id.iv_toolbar_discover:
+                showDiscoverFragment();
+                break;
+        }
     }
 }

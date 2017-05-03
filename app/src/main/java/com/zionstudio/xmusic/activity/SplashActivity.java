@@ -9,6 +9,7 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
@@ -26,13 +27,15 @@ import butterknife.ButterKnife;
 
 public class SplashActivity extends BaseActivity {
 
-
+    private static final String TAG = "SplashActivity";
     private static final int SPLASH_ANIM_DURA = 3 * 1000;
     private static float SPLASH_ANIM_FROM_SCALE = 1.0f;
     private static float SPLASH_ANIM_TO_SCALE = 1.08f;
     private int flag = 0;    //指示动画结束后跳转到哪个Activity 0：登录； 1：主页面
     @BindView(R.id.fl_splash)
     FrameLayout mFlSplash;
+
+    private boolean doSkip = false;
 
     @Override
     protected void initData() {

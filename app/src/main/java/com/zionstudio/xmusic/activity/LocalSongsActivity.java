@@ -62,26 +62,8 @@ public class LocalSongsActivity extends BasePlayMusicActivity {
     @Override
     protected void initData() {
         super.initData();
-
         //查找本地音乐,针对6.0以上系统，先申请权限
         requestReadExternalPermission();
-        //初始化ServiceConnection
-        sConnection = new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-                Log.e(TAG, "onServiceConnected");
-                sService = ((PlayMusicService.PlayMusicBinder) service).getService();
-            }
-
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-                Log.e(TAG, "onServiceDisConnected");
-                sService = null;
-            }
-        };
-
-        //绑定服务
-        bindService(new Intent(this, PlayMusicService.class), sConnection, BIND_AUTO_CREATE);
     }
 
     private void updateLocalMusic() {
@@ -133,8 +115,6 @@ public class LocalSongsActivity extends BasePlayMusicActivity {
     protected void initView() {
         super.initView();
         //实现状态栏透明
-        getWindow().setStatusBarColor(Color.TRANSPARENT);
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
 
         //给RecyclerView设置Adapter
         sAdapter = new LocalSongsAdapter(this, sLocalSongs, new OnItemClickListener() {
@@ -146,8 +126,6 @@ public class LocalSongsActivity extends BasePlayMusicActivity {
                     if (!sService.getPlayingPath().equals(path)) {
                         //开始播放音乐
                         sService.playMusic(s);
-//                        //更新状态栏
-//                        updatePlayingBar();
                     } else if (sService.isPaused()) {
                         sService.continueMusic();
                     }
@@ -171,6 +149,7 @@ public class LocalSongsActivity extends BasePlayMusicActivity {
 
     @OnClick({R.id.iv_back_localsongs})
     public void onClick(View v) {
+        super.onClick(v);
         switch (v.getId()) {
             case R.id.iv_back_localsongs:
                 LocalSongsActivity.this.finish();
