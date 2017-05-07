@@ -64,11 +64,12 @@
 
     <ImageView
         android:id="@+id/iv_playlistbutton"
-        android:layout_width="40dp"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_marginRight="3dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginRight="5dp"
         android:clickable="true"
         android:foreground="?android:attr/selectableItemBackground"
-        android:padding="8dp"
-        android:src="@drawable/playbar_playlist"/>
+        android:src="@drawable/aa1"
+        android:tint="@color/black"/>
 </LinearLayout>

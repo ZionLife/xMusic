@@ -101,7 +101,6 @@ public class PlayButton extends SurfaceView implements SurfaceHolder.Callback, R
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         mIsRunning = false;
-        mThread.interrupt();
     }
 
     @Override
