@@ -3,21 +3,15 @@ package com.zionstudio.xmusic.service;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
-import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.zionstudio.xmusic.MyApplication;
 import com.zionstudio.xmusic.model.Song;
 import com.zionstudio.xmusic.util.Utils;
 
-import java.io.File;
 import java.io.IOException;
 
 /**
@@ -35,19 +29,25 @@ public class PlayMusicService extends Service {
     private static MediaPlayer sPlayer;
     private static String playingPath = "";
     private Song playingSong;
-    private final IBinder sBinder = new PlayMusicBinder();
+    private final IBinder mBinder = new PlayMusicBinder();
     private static Bitmap sCover;
-    private MediaMetadataRetriever sRetriver;
+
+    private static PlayMusicService sPlayMusicService;
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return sBinder;
+        return mBinder;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
+
+//        if (sPlayMusicService == null) {
+//            sPlayMusicService = this;
+//        }
+
         Log.e(TAG, "on PlayMusicService create");
         if (sPlayer == null) {
             sPlayer = new MediaPlayer();
@@ -182,19 +182,41 @@ public class PlayMusicService extends Service {
      * 加载正在播放的歌曲的封面
      */
     private void loadCover() {
-        File f = new File(playingPath);
-        sRetriver = new MediaMetadataRetriever();
-        sRetriver.setDataSource(playingPath);
-        byte[] cover = sRetriver.getEmbeddedPicture();
-        if (cover != null) {
-            sCover = BitmapFactory.decodeByteArray(cover, 0, cover.length);
-            sRetriver.release();
-        }
+        Bitmap bitmap = Utils.getCover(playingSong);
     }
 
-    public float getProgress() {
+    /**
+     * 获取歌曲播放进度的百分比
+     *
+     * @return
+     */
+    public float getProgressPercentage() {
         if (sPlayer != null && (sPlayer.isPlaying() || isPaused)) {
             return sPlayer.getCurrentPosition() / (float) sPlayer.getDuration();
+        }
+        return 0f;
+    }
+
+    /**
+     * 获取当前播放进度
+     *
+     * @return
+     */
+    public float getProgress() {
+        if (sPlayer != null && (sPlayer.isPlaying() || isPaused)) {
+            return sPlayer.getCurrentPosition();
+        }
+        return 0f;
+    }
+
+    /**
+     * 获取歌曲的总长度
+     *
+     * @return
+     */
+    public float getDuration() {
+        if (sPlayer != null && (sPlayer.isPlaying() || isPaused)) {
+            return sPlayer.getDuration();
         }
         return 0f;
     }
@@ -204,6 +226,17 @@ public class PlayMusicService extends Service {
         super.onDestroy();
         //释放MediaPlayer
         sPlayer.release();
+    }
+
+    /**
+     * 设置播放进度
+     *
+     * @param progress
+     */
+    public void setProgress(int progress) {
+        if (sPlayer != null) {
+            sPlayer.seekTo(progress);
+        }
     }
 
     public class PlayMusicBinder extends Binder {

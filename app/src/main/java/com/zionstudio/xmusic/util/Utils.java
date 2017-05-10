@@ -3,6 +3,10 @@ package com.zionstudio.xmusic.util;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.MediaMetadataRetriever;
+import android.os.Build;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
@@ -162,4 +166,103 @@ public class Utils {
         return mediaList;
     }
 
+    /**
+     * 获取屏幕宽
+     */
+    public static int getScreenWidth() {
+        return MyApplication.sContext.getResources().getDisplayMetrics().widthPixels;
+    }
+
+    /**
+     * 获取屏幕高
+     */
+    public static int getScreenHeight() {
+        return MyApplication.sContext.getResources().getDisplayMetrics().heightPixels;
+    }
+
+    /**
+     * 获取音乐专辑封面
+     */
+    public static Bitmap getCover(Song s) {
+        MediaMetadataRetriever retriever;
+        Bitmap bitmap = null;
+        if (s != null) {
+            retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(s.path);
+            byte[] cover = retriever.getEmbeddedPicture();
+            bitmap = BitmapFactory.decodeByteArray(cover, 0, cover.length);
+            retriever.release();
+        }
+        return bitmap;
+    }
+
+    /**
+     * 获取音乐专辑封面的byte数组，便于压缩
+     */
+    public static byte[] getCoverByteArray(Song s) {
+        MediaMetadataRetriever retriever;
+        byte[] bitmap = null;
+        if (s != null) {
+            retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(s.path);
+            bitmap = retriever.getEmbeddedPicture();
+            retriever.release();
+        }
+        return bitmap;
+    }
+
+    public static long getBitmapsize(Bitmap bitmap) {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
+            return bitmap.getByteCount();
+        }
+        // Pre HC-MR1
+        return bitmap.getRowBytes() * bitmap.getHeight();
+    }
+
+    /**
+     * 计算图片的采样率
+     *
+     * @param options
+     * @param reqWidth
+     * @param reqHeight
+     * @return
+     */
+    public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        final int width = options.outWidth;
+        final int height = options.outHeight;
+        int inSampleSize = 1;
+        if (height > reqHeight || width > reqWidth) {
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            while ((halfWidth / inSampleSize > reqWidth) && halfHeight / inSampleSize > reqHeight) {
+                inSampleSize *= 2;
+            }
+        }
+        return inSampleSize;
+    }
+
+    public static byte[] bitmap2Bytes(Bitmap bitmap, Bitmap.CompressFormat format) {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+
+        bitmap.compress(format, 100, bos);
+        byte[] result = bos.toByteArray();
+        try {
+            bos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public static Bitmap decodeSampledBitmapFromBytes(byte[] bytes, int reqWidth, int reqHeight) {
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+        options.inJustDecodeBounds = false;
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+    }
 }

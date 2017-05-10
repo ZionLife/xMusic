@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -17,9 +18,11 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
 import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.model.Song;
 import com.zionstudio.xmusic.service.PlayMusicService;
+import com.zionstudio.xmusic.util.Utils;
 import com.zionstudio.xmusic.view.RoundProgress;
 
 import java.util.Timer;
@@ -81,7 +84,6 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
                     sService = null;
                 }
             };
-            mConn = sConnection;
         }
         bindService(new Intent(this, PlayMusicService.class), sConnection, BIND_AUTO_CREATE);
         //注册广播接收者
@@ -115,13 +117,12 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
         }
         if (mRpPlaybutton != null) {
             if (sService.isPlaying()) {
+                Log.e(TAG, "更新进度");
                 mRpPlaybutton.setState(RoundProgress.PLAYING_STATE);
-//            needUpdateProgress = true;
             } else {
                 mRpPlaybutton.setState(RoundProgress.PAUSED_STATE);
-//            needUpdateProgress = false;
             }
-            mRpPlaybutton.setProgress(sService.getProgress());
+            mRpPlaybutton.setProgress(sService.getProgressPercentage());
         }
     }
 
@@ -155,7 +156,8 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
                 mTvArtistPlaying.setVisibility(View.VISIBLE);
                 mTvArtistPlaying.setText(s.artist);
                 //获取专辑封面并设置到状态栏
-                Bitmap cover = sService.getCover();
+                byte[] coverByteArray = Utils.getCoverByteArray(sService.getPlayingSong());
+                Bitmap cover = Utils.decodeSampledBitmapFromBytes(coverByteArray, mIvCoverPlaying.getWidth(), mIvCoverPlaying.getHeight());
                 if (cover != null) {
                     mIvCoverPlaying.setImageBitmap(cover);
                 } else {

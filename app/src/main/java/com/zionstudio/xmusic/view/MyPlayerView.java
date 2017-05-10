@@ -21,6 +21,10 @@ public class MyPlayerView extends View {
     private Bitmap mCover;
     private int mDrawableID;
 
+    public int getCDSize() {
+        return mCDSize;
+    }
+
     private int mCDSize;
     private boolean hasInit = false;
     private int mBgWidth;
@@ -66,16 +70,19 @@ public class MyPlayerView extends View {
 
     private void init() {
         loadCD();
+        mCover = BitmapFactory.decodeResource(getResources(), R.drawable.cover);
         loadCover();
         mBgWidth = 5;
+
     }
 
     /**
      * 加载专辑封面，专辑封面的半径约是CD机半径的2/3
      */
     private void loadCover() {
+        Bitmap source = mCover;
+
         //裁剪成圆形
-        Bitmap source = BitmapFactory.decodeResource(getResources(), R.drawable.cover);
         int size = (int) ((2 / 3f) * mCDSize);
         size = Math.min(source.getWidth(), source.getHeight());
         int x = (source.getWidth() - size) / 2;
@@ -96,6 +103,9 @@ public class MyPlayerView extends View {
         //先画在一个Bitmap上
         Canvas canvas = new Canvas(bitmap);
         canvas.drawCircle(r, r, r, paint);
+        if (mCover != null && mCover != bitmap) {
+            mCover.recycle();
+        }
         mCover = bitmap;
     }
 
@@ -122,7 +132,12 @@ public class MyPlayerView extends View {
         canvas.drawBitmap(mCover, mCenter - mCover.getWidth() / 2f, mCenter - mCover.getWidth() / 2f, paint);
     }
 
-    public void setDrawableID(int id) {
-        mDrawableID = id;
+    public void setCover(Bitmap bitmap) {
+        if (mCover != null && mCover != bitmap) {
+            mCover.recycle();
+        }
+        mCover = bitmap;
+        loadCover();
+        postInvalidate();
     }
 }
