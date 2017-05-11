@@ -157,7 +157,10 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
                 mTvArtistPlaying.setText(s.artist);
                 //获取专辑封面并设置到状态栏
                 byte[] coverByteArray = Utils.getCoverByteArray(sService.getPlayingSong());
-                Bitmap cover = Utils.decodeSampledBitmapFromBytes(coverByteArray, mIvCoverPlaying.getWidth(), mIvCoverPlaying.getHeight());
+                Bitmap cover = null;
+                if(coverByteArray != null) {
+                     cover = Utils.decodeSampledBitmapFromBytes(coverByteArray, mIvCoverPlaying.getWidth(), mIvCoverPlaying.getHeight());
+                }
                 if (cover != null) {
                     mIvCoverPlaying.setImageBitmap(cover);
                 } else {

@@ -190,7 +190,9 @@ public class Utils {
             retriever = new MediaMetadataRetriever();
             retriever.setDataSource(s.path);
             byte[] cover = retriever.getEmbeddedPicture();
-            bitmap = BitmapFactory.decodeByteArray(cover, 0, cover.length);
+            if (cover != null) {
+                bitmap = BitmapFactory.decodeByteArray(cover, 0, cover.length);
+            }
             retriever.release();
         }
         return bitmap;
@@ -212,11 +214,12 @@ public class Utils {
     }
 
     public static long getBitmapsize(Bitmap bitmap) {
-
+        if (bitmap == null) {
+            return 0;
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
             return bitmap.getByteCount();
         }
-        // Pre HC-MR1
         return bitmap.getRowBytes() * bitmap.getHeight();
     }
 

@@ -136,8 +136,16 @@ public class MyPlayerView extends View {
         if (mCover != null && mCover != bitmap) {
             mCover.recycle();
         }
-        mCover = bitmap;
+        if (bitmap == null) {
+            mCover = BitmapFactory.decodeResource(getResources(), R.drawable.cover);
+        } else {
+            mCover = bitmap;
+        }
         loadCover();
         postInvalidate();
+    }
+
+    public Bitmap getCover() {
+        return mCover;
     }
 }

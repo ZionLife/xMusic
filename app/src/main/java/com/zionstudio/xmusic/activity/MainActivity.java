@@ -83,6 +83,7 @@ public class MainActivity extends BasePlayMusicActivity {
     @Override
     protected void initView() {
         super.initView();
+        Log.e(TAG, "MainActivity initView");
         //初始化Fragment和ViewPager
         MusicFragment musicFragment = new MusicFragment();
         DiscoverFragment discoverFragment = new DiscoverFragment();
@@ -142,12 +143,6 @@ public class MainActivity extends BasePlayMusicActivity {
             e.printStackTrace();
             if (MyApplication.sUserInfo == null) {
                 Log.e(TAG, "sUserInfo == null");
-            }
-            if (MyApplication.sUserInfo.profile == null) {
-                Log.e(TAG, "profile == null");
-            }
-            if (MyApplication.sUserInfo.profile.avatarUrl == null) {
-                Log.e(TAG, "avatarUrl == null");
             }
         }
         //设置背景，调整图片亮度

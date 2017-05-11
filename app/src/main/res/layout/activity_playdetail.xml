@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.zionstudio.xmusic.view.BackgroundAnimationLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:id="@+id/ll_playdetail"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:background="@color/black"
               android:orientation="vertical">
 
     <android.support.v7.widget.Toolbar
@@ -138,19 +138,6 @@
             android:src="@drawable/menu_icon"/>
     </LinearLayout>
 
-    <!--<com.zionstudio.xmusic.view.RectangleProgress-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_gravity="center_horizontal"-->
-    <!--android:layout_marginLeft="50dp"-->
-    <!--android:layout_marginRight="50dp"-->
-    <!--android:layout_marginTop="8dp"-->
-    <!--app:circleRadius="6dp"-->
-    <!--app:lineHeight="2dp"-->
-    <!--app:lineWidth="300dp"-->
-
-    <!--/>-->
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -240,4 +227,4 @@
             android:clickable="true"
             android:src="@drawable/playbar_playlist"/>
     </LinearLayout>
-</LinearLayout>
+</com.zionstudio.xmusic.view.BackgroundAnimationLinearLayout>

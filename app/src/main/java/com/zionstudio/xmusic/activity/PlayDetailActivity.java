@@ -7,13 +7,19 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -21,8 +27,12 @@ import android.widget.TextView;
 import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.model.Song;
 import com.zionstudio.xmusic.service.PlayMusicService;
+import com.zionstudio.xmusic.util.FastBlur;
 import com.zionstudio.xmusic.util.Utils;
+import com.zionstudio.xmusic.view.BackgroundAnimationLinearLayout;
 import com.zionstudio.xmusic.view.MyPlayerView;
+
+import net.qiujuer.genius.blur.StackBlur;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -62,6 +72,8 @@ public class PlayDetailActivity extends BaseActivity {
     TextView mTvDuration;
 
     private static final String TAG = "PlayDetailActivity";
+    @BindView(R.id.ll_playdetail)
+    BackgroundAnimationLinearLayout mLlPlaydetail;
     private ServiceConnection mConn;
     private PlayMusicService mService;
     private boolean needUpdateSeekBar = false;
@@ -73,12 +85,11 @@ public class PlayDetailActivity extends BaseActivity {
                 updateProgress();
             }
             if (needUpdateSeekBar) {
-                Log.e(TAG, "更新进度条");
                 mHandler.postDelayed(this, 1000);
             }
         }
     };
-    private ObjectAnimator mRotation = null;
+    private ObjectAnimator mCDRotation = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,23 +115,18 @@ public class PlayDetailActivity extends BaseActivity {
                     mTvTitlePlaydetail.setText(s.title);
                     mTvArtistPlaydetail.setText(s.artist);
                     Bitmap cover = Utils.getCover(mService.getPlayingSong());
+                    setBackgroundDrawable();
                     //设置专辑封面
                     mMpv.setCover(cover);
                     updateDuration();
                     updateProgress();
-//                    float duration = mService.getDuration();
-//                    int minutes = (int) (duration / (1000 * 60));
-//                    int seconds = (int) ((duration / 1000) % 60);
-//                    //设置
-//                    mTvDuration.setText(String.format("%02d", minutes) + ":" + String.format("%02d", seconds));
-//                    mSeekBar.setMax((int) duration);
-//                    mSeekBar.setProgress((int) mService.getProgress());
                     if (mService.isPlaying()) {
                         needUpdateSeekBar = true;
                         mHandler.post(mRunnable);
                         startPlayerAnim(STYLUS_ANIM_DURATION_ALREADY_PLAYED);
                         mIvPlaybutton.setImageResource(R.drawable.playing_icon);
                     } else {
+                        needUpdateSeekBar = false;
                         mIvPlaybutton.setImageResource(R.drawable.paused_icon);
                     }
                 }
@@ -179,6 +185,32 @@ public class PlayDetailActivity extends BaseActivity {
         initPlayer();
     }
 
+
+    public void setBackgroundDrawable() {
+//        final float widthHeightSize = (float) (Utils.getScreenWidth() * 1.0 /Utils.getScreenHeight() * 1.0);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Bitmap cover = Utils.getCover(mService.getPlayingSong());
+                Log.e(TAG, "压缩前的大小：" + Utils.getBitmapsize(cover));
+                if (cover == null) {
+                    cover = BitmapFactory.decodeResource(getResources(), R.drawable.cover);
+                }
+                Bitmap blurBitmap = StackBlur.blurNativelyPixels(cover, 170, false);
+                final Drawable d = new BitmapDrawable(blurBitmap);
+                d.setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+//                        mLlPlaydetail.setBackground(d);
+                        mLlPlaydetail.setForeground(d);
+                        mLlPlaydetail.beginAnimation();
+                    }
+                });
+            }
+        }).start();
+    }
+
     /**
      * 构建唱片机，调整布局参数
      */
@@ -189,11 +221,6 @@ public class PlayDetailActivity extends BaseActivity {
         mIvStylus.setPivotX(0);
         mIvStylus.setPivotY(0);
 
-
-//        RelativeLayout.LayoutParams lp1 = new RelativeLayout.LayoutParams(mIvStylus.getLayoutParams());
-//        lp1.setMargins(stylus.getWidth() / 2, 0, 0, 0);
-//        lp1.addRule(RelativeLayout.CENTER_HORIZONTAL);
-//        mIvStylus.setLayoutParams(lp1);
         mIvStylus.setRotation(-30);
 
         //设置CD布局的参数
@@ -206,20 +233,23 @@ public class PlayDetailActivity extends BaseActivity {
         stylus.recycle();
     }
 
+    /**
+     * 暂停唱片机动画
+     */
     private void hangPlayerAnim() {
         //让唱盘再转1000毫秒后取消动画
-//        mHandler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//
-//            }
-//        }, 1000);
-        mRotation.pause();
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mCDRotation.pause();
+                ObjectAnimator animStylus = ObjectAnimator.ofFloat(mIvStylus, "rotation", 0, -30);
+                animStylus.setDuration(500);
+                animStylus.setInterpolator(null);
+                animStylus.start();
+            }
+        }, 500);
 
-        ObjectAnimator animStylus = ObjectAnimator.ofFloat(mIvStylus, "rotation", 0, -30);
-        animStylus.setDuration(500);
-        animStylus.setInterpolator(null);
-        animStylus.start();
+
     }
 
     /**
@@ -242,13 +272,18 @@ public class PlayDetailActivity extends BaseActivity {
             @Override
             public void onAnimationEnd(Animator animation) {
                 if (mService != null && mService.isPlaying() && !mService.isPaused()) {
-                    if (mRotation == null) {
-                        mRotation = ObjectAnimator.ofFloat(mMpv, "rotation", 0, 360);
-                        mRotation.setDuration(25000);
-                        mRotation.setInterpolator(null);
-                        mRotation.setRepeatCount(ObjectAnimator.INFINITE);
+                    if (mCDRotation == null) {
+                        mCDRotation = ObjectAnimator.ofFloat(mMpv, "rotation", mMpv.getRotation(), 360);
+                        mCDRotation.setDuration(25000);
+                        //匀速旋转
+                        mCDRotation.setInterpolator(new LinearInterpolator());
+                        mCDRotation.setRepeatCount(ObjectAnimator.INFINITE);
+                        mCDRotation.start();
+                    } else if (mCDRotation.isPaused()) {
+                        //从上次暂停的位置开始继续旋转
+                        mCDRotation.resume();
                     }
-                    mRotation.start();
+
                 }
             }
 
@@ -265,8 +300,24 @@ public class PlayDetailActivity extends BaseActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        mHandler.post(mRunnable);
+        if (mService != null && mService.isPlaying() && !mService.isPaused()) {
+            needUpdateSeekBar = true;
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        needUpdateSeekBar = false;
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
+        needUpdateSeekBar = false;
         unbindService(mConn);
     }
 
