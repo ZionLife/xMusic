@@ -6,11 +6,9 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.animation.AccelerateInterpolator;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import com.zionstudio.xmusic.R;
 
@@ -83,11 +81,13 @@ public class BackgroundAnimationLinearLayout extends LinearLayout {
         });
     }
 
+    public void setForeground(int id) {
+        Drawable drawable = getResources().getDrawable(id, null);
+        layerDrawable.setDrawableByLayerId(layerDrawable.getId(INDEX_FOREGROUND), drawable);
+    }
+
     public void setForeground(Drawable drawable) {
         layerDrawable.setDrawableByLayerId(layerDrawable.getId(INDEX_FOREGROUND), drawable);
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            layerDrawable.setDrawable(INDEX_FOREGROUND, drawable);
-//        }
     }
 
     public void beginAnimation() {
@@ -105,7 +105,7 @@ public class BackgroundAnimationLinearLayout extends LinearLayout {
     }
 
     private void initLayerDrawable() {
-        Drawable backgroundDrawable = getContext().getDrawable(R.drawable.defaultbg_detail);
+        Drawable backgroundDrawable = getContext().getDrawable(R.drawable.bg_detail);
         Drawable[] drawables = new Drawable[2];
 
         drawables[INDEX_BACKGROUND] = backgroundDrawable;

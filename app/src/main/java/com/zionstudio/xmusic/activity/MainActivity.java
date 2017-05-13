@@ -1,5 +1,7 @@
 package com.zionstudio.xmusic.activity;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -20,14 +22,21 @@ import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.adapter.MyFragmentPagerAdapter;
 import com.zionstudio.xmusic.fragment.DiscoverFragment;
 import com.zionstudio.xmusic.fragment.MusicFragment;
+import com.zionstudio.xmusic.model.Song;
+import com.zionstudio.xmusic.util.Utils;
 import com.zionstudio.xmusic.view.CircleTransform;
 import com.zionstudio.xmusic.view.ShadowTransform;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+
+import static com.zionstudio.xmusic.MyApplication.sPlayingIndex;
+import static com.zionstudio.xmusic.MyApplication.sPlayingList;
+import static com.zionstudio.xmusic.MyApplication.sRecentlyPlayedList;
 
 public class MainActivity extends BasePlayMusicActivity {
     private static final String TAG = "MainActivity";
@@ -73,6 +82,20 @@ public class MainActivity extends BasePlayMusicActivity {
     @Override
     protected void initData() {
         super.initData();
+        SharedPreferences sp = getSharedPreferences("PlayingInfo", Context.MODE_PRIVATE);
+        String playingList = sp.getString("PlayingList", null);
+        if (playingList != null) {
+            sPlayingList = (List<Song>) Utils.String2Object(playingList);
+        } else {
+            sPlayingList = new ArrayList<Song>();
+        }
+        sPlayingIndex = sp.getInt("PlayingIndex", -1);
+        String recentlyPlayedList = sp.getString("RecentlyPlayedList", null);
+        if (recentlyPlayedList != null) {
+            sRecentlyPlayedList = (List<Song>) Utils.String2Object(recentlyPlayedList);
+        } else {
+            sRecentlyPlayedList = new ArrayList<Song>();
+        }
     }
 
     @Override
@@ -167,6 +190,23 @@ public class MainActivity extends BasePlayMusicActivity {
     @Override
     protected void onStart() {
         super.onStart();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //将播放列表和最近播放歌曲相关信息保存到SP中
+        SharedPreferences sp = getSharedPreferences("PlayingInfo", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString("PlayingList", Utils.Object2String(sPlayingList));
+        editor.putInt("PlayingIndex", sPlayingIndex);
+        editor.putString("RecentlyPlayedList", Utils.Object2String(sRecentlyPlayedList == null ? new ArrayList<Song>() : sRecentlyPlayedList));
+        editor.commit();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     /**

@@ -10,6 +10,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import com.zionstudio.xmusic.R;
+import com.zionstudio.xmusic.util.BitmapUtils;
 
 /**
  * Created by Administrator on 2017/5/5 0005.
@@ -55,8 +56,9 @@ public class MyPlayerView extends View {
 
         mCenter = getWidth() / 2f;
         drawBg(canvas);
-        drawCD(canvas);
         drawCover(canvas);
+        drawCD(canvas);
+
     }
 
     /**
@@ -70,7 +72,7 @@ public class MyPlayerView extends View {
 
     private void init() {
         loadCD();
-        mCover = BitmapFactory.decodeResource(getResources(), R.drawable.cover);
+        mCover = BitmapFactory.decodeResource(getResources(), R.drawable.cover_square);
         loadCover();
         mBgWidth = 5;
 
@@ -81,32 +83,8 @@ public class MyPlayerView extends View {
      */
     private void loadCover() {
         Bitmap source = mCover;
-
-        //裁剪成圆形
-        int size = (int) ((2 / 3f) * mCDSize);
-        size = Math.min(source.getWidth(), source.getHeight());
-        int x = (source.getWidth() - size) / 2;
-        int y = (source.getHeight() - size) / 2;
-
-        Bitmap squareBitmap = Bitmap.createBitmap(source, x, y, size, size);
-        if (squareBitmap != source) {
-            source.recycle();
-        }
-        Bitmap bitmap = Bitmap.createBitmap((int) ((2 / 3f) * mCDSize), (int) ((2 / 3f) * mCDSize), source.getConfig() == null ? source.getConfig() : Bitmap.Config.ARGB_8888);
-        Paint paint = new Paint();
-
-        //设置着色器，当图片太小时拉伸
-        BitmapShader shader = new BitmapShader(squareBitmap, BitmapShader.TileMode.CLAMP, BitmapShader.TileMode.CLAMP);
-        paint.setShader(shader);
-        paint.setAntiAlias(true);
-        float r = (2 / 3f) * mCDSize / 2;
-        //先画在一个Bitmap上
-        Canvas canvas = new Canvas(bitmap);
-        canvas.drawCircle(r, r, r, paint);
-        if (mCover != null && mCover != bitmap) {
-            mCover.recycle();
-        }
-        mCover = bitmap;
+        int expectedSize = (int) ((2 / 3f) * mCDSize);
+        mCover = BitmapUtils.getScaleBitmap(source, expectedSize, expectedSize);
     }
 
     /**
@@ -130,6 +108,7 @@ public class MyPlayerView extends View {
         Paint paint = new Paint();
         paint.setAntiAlias(true);
         canvas.drawBitmap(mCover, mCenter - mCover.getWidth() / 2f, mCenter - mCover.getWidth() / 2f, paint);
+//        canvas.drawBitmap(mCover, 0, 0, paint);
     }
 
     public void setCover(Bitmap bitmap) {
@@ -137,7 +116,7 @@ public class MyPlayerView extends View {
             mCover.recycle();
         }
         if (bitmap == null) {
-            mCover = BitmapFactory.decodeResource(getResources(), R.drawable.cover);
+            mCover = BitmapFactory.decodeResource(getResources(), R.drawable.cover_square);
         } else {
             mCover = bitmap;
         }
@@ -148,4 +127,11 @@ public class MyPlayerView extends View {
     public Bitmap getCover() {
         return mCover;
     }
+//
+//    public void loadDefaultCover(){
+//        if(mCover != null){
+//            mCover.recycle();
+//        }
+//
+//    }
 }

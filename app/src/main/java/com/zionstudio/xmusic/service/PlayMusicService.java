@@ -22,6 +22,7 @@ public class PlayMusicService extends Service {
     public static final int PLAY_MUSIC = 0;
     public static final int PAUSE_MUSIC = 1;
     public static final int STOP_MUSIC = 2;
+    public static final int END_MUSIC = 3;
 
     private static boolean isStop = true;
     private static boolean isPaused = false;

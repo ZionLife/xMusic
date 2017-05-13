@@ -117,7 +117,6 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
         }
         if (mRpPlaybutton != null) {
             if (sService.isPlaying()) {
-                Log.e(TAG, "更新进度");
                 mRpPlaybutton.setState(RoundProgress.PLAYING_STATE);
             } else {
                 mRpPlaybutton.setState(RoundProgress.PAUSED_STATE);
@@ -175,11 +174,6 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         //解绑服务
-        if (mConn == sConnection) {
-            Log.e(TAG, "equal");
-        } else {
-            Log.e(TAG, "not equal");
-        }
         unbindService(sConnection);
         unregisterReceiver(mReceiver);
     }

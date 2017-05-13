@@ -33,14 +33,20 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.OnClick;
 
+import com.zionstudio.xmusic.MyApplication;
+
+import static com.zionstudio.xmusic.MyApplication.sPlayingIndex;
+import static com.zionstudio.xmusic.MyApplication.sPlayingList;
+
+
 /**
  * Created by Administrator on 2017/4/26 0026.
  */
 
 public class LocalSongsActivity extends BasePlayMusicActivity {
     private static final String TAG = "LocalSongsActivity";
-    private static List<Song> sLocalSongs = new ArrayList<Song>();
     private static LocalSongsAdapter sAdapter = null;
+    public static List<Song> sLocalSongs = new ArrayList<Song>();
     private static Bitmap sCover;
     MediaMetadataRetriever sRetriver = null;
     private boolean readExternalPermission = false;
@@ -130,6 +136,12 @@ public class LocalSongsActivity extends BasePlayMusicActivity {
                         sService.continueMusic();
                     }
                 }
+                //如果当前播放列表和本地音乐不同，则将本地音乐添加到当前播放列表中
+                if (!sPlayingList.containsAll(sLocalSongs) || !sLocalSongs.containsAll(sPlayingList)) {
+                    sPlayingList.addAll(sLocalSongs);
+                }
+                //记录下列表索引
+                sPlayingIndex = position;
             }
 
             @Override

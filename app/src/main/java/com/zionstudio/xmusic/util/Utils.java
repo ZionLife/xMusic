@@ -149,7 +149,7 @@ public class Utils {
                 s.size = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.SIZE));
                 s.path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
                 //检查是否会小于1分钟或者小于1Mb，且过滤掉.flac文件（系统MediaPlayer对.flac支持不好，以后用开源库替换）
-                if ((s.duration / 60 <= 0) && (s.size < 1024 * 1024) || s.path.contains(".flac")) {
+                if ((s.duration / 60 <= 0) || (s.size < 1024 * 1024) || s.path.contains(".flac")) {
                     continue;
                 }
 
@@ -158,6 +158,7 @@ public class Utils {
                 s.artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
                 s.albums = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
                 s.path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                s.type = Constants.TYPE_LOCAL;
                 mediaList.add(s);
             }
         } catch (Exception e) {
@@ -213,6 +214,12 @@ public class Utils {
         return bitmap;
     }
 
+    /**
+     * 获取Bitmap的大小
+     *
+     * @param bitmap
+     * @return
+     */
     public static long getBitmapsize(Bitmap bitmap) {
         if (bitmap == null) {
             return 0;
@@ -246,6 +253,13 @@ public class Utils {
         return inSampleSize;
     }
 
+    /**
+     * 将Bitmap转换成字节数组
+     *
+     * @param bitmap
+     * @param format
+     * @return
+     */
     public static byte[] bitmap2Bytes(Bitmap bitmap, Bitmap.CompressFormat format) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
@@ -259,6 +273,14 @@ public class Utils {
         return result;
     }
 
+    /**
+     * 根据采样率，从字节数组中创建Bitmap
+     *
+     * @param bytes
+     * @param reqWidth
+     * @param reqHeight
+     * @return
+     */
     public static Bitmap decodeSampledBitmapFromBytes(byte[] bytes, int reqWidth, int reqHeight) {
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;

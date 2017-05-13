@@ -2,8 +2,11 @@ package com.zionstudio.xmusic.activity;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -19,7 +22,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -27,7 +29,6 @@ import android.widget.TextView;
 import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.model.Song;
 import com.zionstudio.xmusic.service.PlayMusicService;
-import com.zionstudio.xmusic.util.FastBlur;
 import com.zionstudio.xmusic.util.Utils;
 import com.zionstudio.xmusic.view.BackgroundAnimationLinearLayout;
 import com.zionstudio.xmusic.view.MyPlayerView;
@@ -37,6 +38,9 @@ import net.qiujuer.genius.blur.StackBlur;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+
+import static com.zionstudio.xmusic.MyApplication.sPlayingIndex;
+import static com.zionstudio.xmusic.MyApplication.sPlayingList;
 
 /**
  * Created by Administrator on 2017/5/3 0003.
@@ -74,6 +78,10 @@ public class PlayDetailActivity extends BaseActivity {
     private static final String TAG = "PlayDetailActivity";
     @BindView(R.id.ll_playdetail)
     BackgroundAnimationLinearLayout mLlPlaydetail;
+    @BindView(R.id.iv_presong)
+    ImageView mIvPresong;
+    @BindView(R.id.iv_nextsong)
+    ImageView mIvNextsong;
     private ServiceConnection mConn;
     private PlayMusicService mService;
     private boolean needUpdateSeekBar = false;
@@ -90,6 +98,8 @@ public class PlayDetailActivity extends BaseActivity {
         }
     };
     private ObjectAnimator mCDRotation = null;
+    private ObjectAnimator mAnimStylus = null;
+    private PlayStateReceiver mReceiver = new PlayStateReceiver();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,24 +121,7 @@ public class PlayDetailActivity extends BaseActivity {
                 mService = ((PlayMusicService.PlayMusicBinder) service).getService();
                 //与服务建立连接后，更新View
                 if (mService != null && (mService.isPlaying() || mService.isPaused())) {
-                    Song s = mService.getPlayingSong();
-                    mTvTitlePlaydetail.setText(s.title);
-                    mTvArtistPlaydetail.setText(s.artist);
-                    Bitmap cover = Utils.getCover(mService.getPlayingSong());
-                    setBackgroundDrawable();
-                    //设置专辑封面
-                    mMpv.setCover(cover);
-                    updateDuration();
-                    updateProgress();
-                    if (mService.isPlaying()) {
-                        needUpdateSeekBar = true;
-                        mHandler.post(mRunnable);
-                        startPlayerAnim(STYLUS_ANIM_DURATION_ALREADY_PLAYED);
-                        mIvPlaybutton.setImageResource(R.drawable.playing_icon);
-                    } else {
-                        needUpdateSeekBar = false;
-                        mIvPlaybutton.setImageResource(R.drawable.paused_icon);
-                    }
+                    updateState();
                 }
             }
 
@@ -138,6 +131,8 @@ public class PlayDetailActivity extends BaseActivity {
             }
         };
         bindService(new Intent(this, PlayMusicService.class), mConn, BIND_AUTO_CREATE);
+        IntentFilter filter = new IntentFilter("com.zionstudio.xmusic.playstate");
+        registerReceiver(mReceiver, filter);
     }
 
     private void updateProgress() {
@@ -155,6 +150,45 @@ public class PlayDetailActivity extends BaseActivity {
         //设置
         mTvDuration.setText(String.format("%02d", minutes) + ":" + String.format("%02d", seconds));
         mSeekBar.setMax((int) duration);
+    }
+
+    /**
+     * 有音乐播放时，更新该页面
+     */
+    private void updateState() {
+        Song s = mService.getPlayingSong();
+        mTvTitlePlaydetail.setText(s.title);
+        mTvArtistPlaydetail.setText(s.artist);
+        Bitmap cover = Utils.getCover(mService.getPlayingSong());
+        setBackgroundDrawable();
+        //设置专辑封面
+        mMpv.setCover(cover);
+        updateDuration();
+        updateProgress();
+        if (mService.isPlaying()) {
+            needUpdateSeekBar = true;
+            mHandler.post(mRunnable);
+            startPlayerAnim(STYLUS_ANIM_DURATION_ALREADY_PLAYED);
+            mIvPlaybutton.setImageResource(R.drawable.playing_icon);
+        } else {
+            needUpdateSeekBar = false;
+            mIvPlaybutton.setImageResource(R.drawable.paused_icon);
+        }
+    }
+
+    /**
+     * 歌曲播放结束且没有下一首歌曲时，重置该页面
+     */
+    public void resetState() {
+        mIvPlaybutton.setImageResource(R.drawable.paused_icon);
+        needUpdateSeekBar = false;
+        mTvTitlePlaydetail.setText("云音乐");
+        mTvArtistPlaydetail.setText("");
+        mLlPlaydetail.setForeground(R.drawable.bg_detail);
+        mTvDuration.setText("00:00");
+        mTvProgress.setText("00:00");
+        mLlPlaydetail.beginAnimation();
+        hangPlayerAnim(PlayMusicService.END_MUSIC);
     }
 
     @Override
@@ -202,7 +236,6 @@ public class PlayDetailActivity extends BaseActivity {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-//                        mLlPlaydetail.setBackground(d);
                         mLlPlaydetail.setForeground(d);
                         mLlPlaydetail.beginAnimation();
                     }
@@ -236,14 +269,45 @@ public class PlayDetailActivity extends BaseActivity {
     /**
      * 暂停唱片机动画
      */
-    private void hangPlayerAnim() {
-        //让唱盘再转1000毫秒后取消动画
+    private void hangPlayerAnim(final int type) {
+        //让唱盘再转500毫秒后取消动画
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                mCDRotation.pause();
+                switch (type) {
+                    case PlayMusicService.END_MUSIC:
+                        mCDRotation.cancel();
+                        //将封面设置成初始
+                        mMpv.setCover(null);
+                        mMpv.setRotation(0);
+                        break;
+                    case PlayMusicService.PAUSE_MUSIC:
+                        mCDRotation.pause();
+                        break;
+                }
                 ObjectAnimator animStylus = ObjectAnimator.ofFloat(mIvStylus, "rotation", 0, -30);
                 animStylus.setDuration(500);
+                animStylus.addListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        mIvPlaybutton.setClickable(true);
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animator animation) {
+
+                    }
+                });
                 animStylus.setInterpolator(null);
                 animStylus.start();
             }
@@ -258,12 +322,8 @@ public class PlayDetailActivity extends BaseActivity {
      * @param duration 设置duration参数是为了当第一次进入该activity时，如果是正在播放音乐的状态，则唱针无需动画，直接显示在唱盘上
      */
     private void startPlayerAnim(int duration) {
-
-        final ObjectAnimator animStylus = ObjectAnimator.ofFloat(mIvStylus, "rotation", -30, 0);
-        animStylus.setDuration(duration);
-        animStylus.setInterpolator(null);
-        animStylus.start();
-        animStylus.addListener(new Animator.AnimatorListener() {
+        mAnimStylus = ObjectAnimator.ofFloat(mIvStylus, "rotation", -30, 0);
+        mAnimStylus.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
 
@@ -271,6 +331,7 @@ public class PlayDetailActivity extends BaseActivity {
 
             @Override
             public void onAnimationEnd(Animator animation) {
+                mIvPlaybutton.setClickable(true);
                 if (mService != null && mService.isPlaying() && !mService.isPaused()) {
                     if (mCDRotation == null) {
                         mCDRotation = ObjectAnimator.ofFloat(mMpv, "rotation", mMpv.getRotation(), 360);
@@ -278,12 +339,12 @@ public class PlayDetailActivity extends BaseActivity {
                         //匀速旋转
                         mCDRotation.setInterpolator(new LinearInterpolator());
                         mCDRotation.setRepeatCount(ObjectAnimator.INFINITE);
+                        mMpv.setRotation(0);
                         mCDRotation.start();
                     } else if (mCDRotation.isPaused()) {
                         //从上次暂停的位置开始继续旋转
                         mCDRotation.resume();
                     }
-
                 }
             }
 
@@ -297,6 +358,9 @@ public class PlayDetailActivity extends BaseActivity {
 
             }
         });
+        mAnimStylus.setInterpolator(new LinearInterpolator());
+        mAnimStylus.setDuration(duration);
+        mAnimStylus.start();
     }
 
     @Override
@@ -319,22 +383,26 @@ public class PlayDetailActivity extends BaseActivity {
         super.onDestroy();
         needUpdateSeekBar = false;
         unbindService(mConn);
+        unregisterReceiver(mReceiver);
     }
 
-    @OnClick({R.id.iv_playbutton, R.id.iv_back_playdetail})
+    @OnClick({R.id.iv_playbutton, R.id.iv_back_playdetail, R.id.iv_presong, R.id.iv_nextsong})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.iv_playbutton:
                 if (mService != null) {
                     if (mService.isPaused()) {
-                        mService.continueMusic();
+
                         needUpdateSeekBar = true;
                         mHandler.post(mRunnable);
                         mIvPlaybutton.setImageResource(R.drawable.playing_icon);
+                        mIvPlaybutton.setClickable(false);
                         startPlayerAnim(STYLUS_ANIM_DURATION_READY_PLAY);
+                        mService.continueMusic();
                     } else if (mService.isPlaying()) {
                         needUpdateSeekBar = false;
-                        hangPlayerAnim();
+                        mIvPlaybutton.setClickable(false);
+                        hangPlayerAnim(PlayMusicService.PAUSE_MUSIC);
                         mService.pauseMusic();
                         mIvPlaybutton.setImageResource(R.drawable.paused_icon);
                     }
@@ -343,6 +411,61 @@ public class PlayDetailActivity extends BaseActivity {
             case R.id.iv_back_playdetail:
                 this.finish();
                 break;
+            case R.id.iv_presong:
+
+                if (sPlayingIndex > 0) {
+                    //如果还存在上一首，则播放
+                    sPlayingIndex--;
+                    mService.playMusic(sPlayingList.get(sPlayingIndex));
+                    if (mCDRotation != null) {
+                        mCDRotation.cancel();
+                    }
+                    mCDRotation = null;
+                    mMpv.setRotation(0);
+                } else {
+                    Utils.makeToast("上一首是不存在的");
+                }
+                break;
+            case R.id.iv_nextsong:
+                if (sPlayingIndex < sPlayingList.size() - 1) {
+                    //如果还存在下一首，则播放
+                    sPlayingIndex++;
+                    mService.playMusic(sPlayingList.get(sPlayingIndex));
+                    if (mCDRotation != null) {
+                        mCDRotation.cancel();
+                    }
+                    mCDRotation = null;
+                } else {
+                    Utils.makeToast("下一首是不存在的");
+                }
+                break;
+        }
+    }
+
+    class PlayStateReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String type = intent.getStringExtra("type");
+            switch (type) {
+                case "start":
+                    updateState();
+                    break;
+                case "paused":
+                    break;
+                case "continue":
+                    break;
+                case "stop":
+                    break;
+                case "end":
+                    if (sPlayingIndex < sPlayingList.size() - 1) {
+                        sPlayingIndex++;
+                        mService.playMusic(sPlayingList.get(sPlayingIndex));
+                    } else {
+                        resetState();
+                    }
+                    break;
+            }
         }
     }
 }
