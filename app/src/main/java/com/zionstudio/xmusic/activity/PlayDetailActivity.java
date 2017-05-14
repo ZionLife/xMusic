@@ -29,6 +29,7 @@ import android.widget.TextView;
 import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.model.Song;
 import com.zionstudio.xmusic.service.PlayMusicService;
+import com.zionstudio.xmusic.util.BitmapUtils;
 import com.zionstudio.xmusic.util.Utils;
 import com.zionstudio.xmusic.view.BackgroundAnimationLinearLayout;
 import com.zionstudio.xmusic.view.MyPlayerView;
@@ -100,6 +101,8 @@ public class PlayDetailActivity extends BaseActivity {
     private ObjectAnimator mCDRotation = null;
     private ObjectAnimator mAnimStylus = null;
     private PlayStateReceiver mReceiver = new PlayStateReceiver();
+    private Bitmap mCover;
+    private byte[] mCoverBytes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -159,10 +162,20 @@ public class PlayDetailActivity extends BaseActivity {
         Song s = mService.getPlayingSong();
         mTvTitlePlaydetail.setText(s.title);
         mTvArtistPlaydetail.setText(s.artist);
-        Bitmap cover = Utils.getCover(mService.getPlayingSong());
+        if (mCover != null) {
+            mCover.recycle();
+        }
+        Log.e(TAG, "CD封面原始大小:" + BitmapUtils.getBitmapsize(mCover));
+        mCoverBytes = BitmapUtils.getCoverByteArray(mService.getPlayingSong());
+        if (mCoverBytes != null) {
+            mCover = BitmapUtils.decodeSampleBitmapFromBytes(mCoverBytes, (int) ((2 / 3f) * mMpv.getCDSize()), (int) ((2 / 3f) * mMpv.getCDSize()));
+            Log.e(TAG, "CD封面压缩后的大小:" + BitmapUtils.getBitmapsize(mCover));
+        } else {
+            mCover = null;
+        }
         setBackgroundDrawable();
         //设置专辑封面
-        mMpv.setCover(cover);
+        mMpv.setCover(mCover);
         updateDuration();
         updateProgress();
         if (mService.isPlaying()) {
@@ -225,14 +238,19 @@ public class PlayDetailActivity extends BaseActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Bitmap cover = Utils.getCover(mService.getPlayingSong());
-                Log.e(TAG, "压缩前的大小：" + Utils.getBitmapsize(cover));
-                if (cover == null) {
-                    cover = BitmapFactory.decodeResource(getResources(), R.drawable.cover);
-                }
-                Bitmap blurBitmap = StackBlur.blurNativelyPixels(cover, 170, false);
-                final Drawable d = new BitmapDrawable(blurBitmap);
-                d.setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
+////                Bitmap cover = BitmapUtils.getCover(mService.getPlayingSong());
+//                Bitmap cover = BitmapUtils.decodeSampleBitmapFromBytes(mCoverBytes, Utils.getScreenWidth(), Utils.getScreenHeight());
+//                Log.e(TAG, "背景压缩前的大小：" + BitmapUtils.getBitmapsize(cover));
+//                if (cover == null) {
+//                    cover = BitmapFactory.decodeResource(getResources(), R.drawable.cover);
+//                }
+////                Bitmap blurBitmap = StackBlur.blurNativelyPixels(cover, 170, false);
+//                Log.e(TAG, "背景压缩后的大小：" + BitmapUtils.getBitmapsize(cover));
+//                Bitmap blurBitmap = StackBlur.blur(cover, 170, false);
+//                final Drawable d = new BitmapDrawable(blurBitmap);
+//                d.setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
+//                cover.recycle();
+                final Drawable d = getBackgroundDrawable();
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -242,6 +260,28 @@ public class PlayDetailActivity extends BaseActivity {
                 });
             }
         }).start();
+    }
+
+    private Drawable getBackgroundDrawable() {
+        final float widthHeightSize = (float) (Utils.getScreenWidth() * 1.0 / Utils.getScreenHeight());
+        Bitmap bitmap;
+        if (mCoverBytes != null) {
+            bitmap = BitmapUtils.decodeSampleBitmapFromBytes(mCoverBytes, Utils.getScreenWidth(), Utils.getScreenHeight());
+        } else {
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.cover);
+        }
+        int cropBitmapWidth = (int) (widthHeightSize * bitmap.getHeight());
+        int cropBitmapWidthX = (int) ((bitmap.getWidth() - cropBitmapWidth) / 2.0);
+
+        Bitmap cropBitmap = Bitmap.createBitmap(bitmap, cropBitmapWidthX, 0, cropBitmapWidth, bitmap.getHeight());
+
+        Bitmap scaleBitmap = Bitmap.createScaledBitmap(cropBitmap, bitmap.getWidth() / 50, bitmap.getHeight() / 50, false);
+
+        final Bitmap blurBitmap = StackBlur.blur(scaleBitmap, 7, false);
+
+        final Drawable foregroundDrawable = new BitmapDrawable(blurBitmap);
+        foregroundDrawable.setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
+        return foregroundDrawable;
     }
 
     /**
@@ -339,7 +379,6 @@ public class PlayDetailActivity extends BaseActivity {
                         //匀速旋转
                         mCDRotation.setInterpolator(new LinearInterpolator());
                         mCDRotation.setRepeatCount(ObjectAnimator.INFINITE);
-                        mMpv.setRotation(0);
                         mCDRotation.start();
                     } else if (mCDRotation.isPaused()) {
                         //从上次暂停的位置开始继续旋转
@@ -412,31 +451,31 @@ public class PlayDetailActivity extends BaseActivity {
                 this.finish();
                 break;
             case R.id.iv_presong:
-
                 if (sPlayingIndex > 0) {
                     //如果还存在上一首，则播放
                     sPlayingIndex--;
                     mService.playMusic(sPlayingList.get(sPlayingIndex));
-                    if (mCDRotation != null) {
-                        mCDRotation.cancel();
-                    }
-                    mCDRotation = null;
-                    mMpv.setRotation(0);
+//                    if (mCDRotation != null) {
+//                        mCDRotation.cancel();
+//                    }
+//                    mCDRotation = null;
+                    mCDRotation.pause();
                 } else {
                     Utils.makeToast("上一首是不存在的");
                 }
                 break;
             case R.id.iv_nextsong:
-                if (sPlayingIndex < sPlayingList.size() - 1) {
-                    //如果还存在下一首，则播放
-                    sPlayingIndex++;
-                    mService.playMusic(sPlayingList.get(sPlayingIndex));
-                    if (mCDRotation != null) {
-                        mCDRotation.cancel();
+                try {
+                    if (sPlayingIndex < sPlayingList.size() - 1) {
+                        //如果还存在下一首，则播放
+                        sPlayingIndex++;
+                        mService.playMusic(sPlayingList.get(sPlayingIndex));
+                        mCDRotation.pause();
+                    } else {
+                        Utils.makeToast("下一首是不存在的");
                     }
-                    mCDRotation = null;
-                } else {
-                    Utils.makeToast("下一首是不存在的");
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
                 break;
         }
@@ -458,12 +497,8 @@ public class PlayDetailActivity extends BaseActivity {
                 case "stop":
                     break;
                 case "end":
-                    if (sPlayingIndex < sPlayingList.size() - 1) {
-                        sPlayingIndex++;
-                        mService.playMusic(sPlayingList.get(sPlayingIndex));
-                    } else {
-                        resetState();
-                    }
+                    //没有歌曲播放了
+                    resetState();
                     break;
             }
         }

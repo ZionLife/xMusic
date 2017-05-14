@@ -22,10 +22,6 @@ public class MyPlayerView extends View {
     private Bitmap mCover;
     private int mDrawableID;
 
-    public int getCDSize() {
-        return mCDSize;
-    }
-
     private int mCDSize;
     private boolean hasInit = false;
     private int mBgWidth;
@@ -127,11 +123,8 @@ public class MyPlayerView extends View {
     public Bitmap getCover() {
         return mCover;
     }
-//
-//    public void loadDefaultCover(){
-//        if(mCover != null){
-//            mCover.recycle();
-//        }
-//
-//    }
+
+    public int getCDSize() {
+        return mCDSize;
+    }
 }

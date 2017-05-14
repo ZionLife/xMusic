@@ -137,7 +137,7 @@ public class LocalSongsActivity extends BasePlayMusicActivity {
                     }
                 }
                 //如果当前播放列表和本地音乐不同，则将本地音乐添加到当前播放列表中
-                if (!sPlayingList.containsAll(sLocalSongs) || !sLocalSongs.containsAll(sPlayingList)) {
+                if (sPlayingList != null && (!sPlayingList.containsAll(sLocalSongs) || !sLocalSongs.containsAll(sPlayingList))) {
                     sPlayingList.addAll(sLocalSongs);
                 }
                 //记录下列表索引

@@ -22,6 +22,7 @@ import com.squareup.picasso.Picasso;
 import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.model.Song;
 import com.zionstudio.xmusic.service.PlayMusicService;
+import com.zionstudio.xmusic.util.BitmapUtils;
 import com.zionstudio.xmusic.util.Utils;
 import com.zionstudio.xmusic.view.RoundProgress;
 
@@ -66,6 +67,7 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
     private Runnable mRunnable;
     private boolean needUpdateProgress = false;
     private ServiceConnection mConn = null;
+    private Bitmap mCover;
 
     protected void initData() {
 
@@ -155,13 +157,15 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
                 mTvArtistPlaying.setVisibility(View.VISIBLE);
                 mTvArtistPlaying.setText(s.artist);
                 //获取专辑封面并设置到状态栏
-                byte[] coverByteArray = Utils.getCoverByteArray(sService.getPlayingSong());
-                Bitmap cover = null;
-                if(coverByteArray != null) {
-                     cover = Utils.decodeSampledBitmapFromBytes(coverByteArray, mIvCoverPlaying.getWidth(), mIvCoverPlaying.getHeight());
+                byte[] coverByteArray = BitmapUtils.getCoverByteArray(sService.getPlayingSong());
+                if (mCover != null) {
+                    mCover.recycle();
                 }
-                if (cover != null) {
-                    mIvCoverPlaying.setImageBitmap(cover);
+                if (coverByteArray != null) {
+                    mCover = BitmapUtils.decodeSampleBitmapFromBytes(coverByteArray, mIvCoverPlaying.getWidth(), mIvCoverPlaying.getHeight());
+                }
+                if (mCover != null) {
+                    mIvCoverPlaying.setImageBitmap(mCover);
                 } else {
                     mIvCoverPlaying.setImageResource(R.drawable.default_cover);
                 }

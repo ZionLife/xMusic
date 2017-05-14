@@ -10,9 +10,13 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.zionstudio.xmusic.model.Song;
+import com.zionstudio.xmusic.util.BitmapUtils;
 import com.zionstudio.xmusic.util.Utils;
 
 import java.io.IOException;
+
+import static com.zionstudio.xmusic.MyApplication.sPlayingIndex;
+import static com.zionstudio.xmusic.MyApplication.sPlayingList;
 
 /**
  * Created by Administrator on 2017/4/30 0030.
@@ -56,9 +60,14 @@ public class PlayMusicService extends Service {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
                     playingPath = "";
-                    Intent intent = new Intent("com.zionstudio.xmusic.playstate");
-                    intent.putExtra("type", "end");
-                    sendBroadcast(intent);
+                    if (sPlayingIndex < sPlayingList.size() - 1) {
+                        sPlayingIndex++;
+                        PlayMusicService.this.playMusic(sPlayingList.get(sPlayingIndex));
+                    } else {
+                        Intent intent = new Intent("com.zionstudio.xmusic.playstate");
+                        intent.putExtra("type", "end");
+                        sendBroadcast(intent);
+                    }
                 }
             });
         }
@@ -183,7 +192,7 @@ public class PlayMusicService extends Service {
      * 加载正在播放的歌曲的封面
      */
     private void loadCover() {
-        Bitmap bitmap = Utils.getCover(playingSong);
+        Bitmap bitmap = BitmapUtils.getCover(playingSong);
     }
 
     /**

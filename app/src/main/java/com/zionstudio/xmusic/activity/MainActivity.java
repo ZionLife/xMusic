@@ -144,6 +144,11 @@ public class MainActivity extends BasePlayMusicActivity {
         });
     }
 
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+    }
+
     /**
      * 展示MusicFragment
      */

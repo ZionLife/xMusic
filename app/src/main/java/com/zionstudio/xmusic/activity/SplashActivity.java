@@ -40,14 +40,10 @@ public class SplashActivity extends BaseActivity {
     @Override
     protected void initData() {
         //初始化用户信息
-        SharedPreferences userSP = getSharedPreferences("userSP", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = userSP.edit();
-        String userInfo = userSP.getString("userInfo", null);
-        if (userInfo == null) {
+        if (MyApplication.sUserInfo == null) {
             flag = 0;
         } else {
             flag = 1;
-            MyApplication.sUserInfo = (UserInfo) Utils.String2Object(userInfo);
         }
     }
 
