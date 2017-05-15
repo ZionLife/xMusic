@@ -1,29 +1,21 @@
 package com.zionstudio.xmusic.activity;
 
 import android.Manifest;
-import android.content.ComponentName;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.media.MediaMetadataRetriever;
 import android.os.Build;
-import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.zionstudio.xmusic.MyApplication;
 import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.adapter.LocalSongsAdapter;
 import com.zionstudio.xmusic.listener.OnItemClickListener;
 import com.zionstudio.xmusic.model.Song;
-import com.zionstudio.xmusic.service.PlayMusicService;
 import com.zionstudio.xmusic.util.Utils;
 import com.zionstudio.xmusic.view.DividerDecoration;
 
@@ -33,8 +25,6 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-import com.zionstudio.xmusic.MyApplication;
-
 import static com.zionstudio.xmusic.MyApplication.sPlayingIndex;
 import static com.zionstudio.xmusic.MyApplication.sPlayingList;
 
@@ -43,12 +33,10 @@ import static com.zionstudio.xmusic.MyApplication.sPlayingList;
  * Created by Administrator on 2017/4/26 0026.
  */
 
-public class LocalSongsActivity extends BasePlayMusicActivity {
+public class LocalSongsActivity extends BasePlaybarActivity {
     private static final String TAG = "LocalSongsActivity";
-    private static LocalSongsAdapter sAdapter = null;
-    public static List<Song> sLocalSongs = new ArrayList<Song>();
-    private static Bitmap sCover;
-    MediaMetadataRetriever sRetriver = null;
+    private LocalSongsAdapter mAdapter = null;
+    public List<Song> mLocalSongs = new ArrayList<Song>();
     private boolean readExternalPermission = false;
     @BindView(R.id.iv_back_localsongs)
     ImageView mIvBackLocalsongs;
@@ -73,11 +61,14 @@ public class LocalSongsActivity extends BasePlayMusicActivity {
     }
 
     private void updateLocalMusic() {
-        sLocalSongs.clear();
-        sLocalSongs.addAll(Utils.getAllMediaList(this));
+        mLocalSongs.clear();
+        mLocalSongs.addAll(Utils.getAllMediaList(this));
 
     }
 
+    /**
+     * 请求外部存储读权限
+     */
     private void requestReadExternalPermission() {
         boolean result = true;
         String permission[] = {Manifest.permission.READ_EXTERNAL_STORAGE};
@@ -120,13 +111,11 @@ public class LocalSongsActivity extends BasePlayMusicActivity {
     @Override
     protected void initView() {
         super.initView();
-        //实现状态栏透明
-
         //给RecyclerView设置Adapter
-        sAdapter = new LocalSongsAdapter(this, sLocalSongs, new OnItemClickListener() {
+        mAdapter = new LocalSongsAdapter(this, mLocalSongs, new OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                Song s = sLocalSongs.get(position);
+                Song s = mLocalSongs.get(position);
                 String path = s.path;
                 if (sService != null) {
                     if (!sService.getPlayingPath().equals(path)) {
@@ -137,11 +126,13 @@ public class LocalSongsActivity extends BasePlayMusicActivity {
                     }
                 }
                 //如果当前播放列表和本地音乐不同，则将本地音乐添加到当前播放列表中
-                if (sPlayingList != null && (!sPlayingList.containsAll(sLocalSongs) || !sLocalSongs.containsAll(sPlayingList))) {
-                    sPlayingList.addAll(sLocalSongs);
+                if (sPlayingList != null && (!sPlayingList.containsAll(mLocalSongs) || !mLocalSongs.containsAll(sPlayingList))) {
+                    sPlayingList.addAll(mLocalSongs);
                 }
                 //记录下列表索引
                 sPlayingIndex = position;
+                //添加进最近播放列表
+                MyApplication.sRecentlyPlayedList.add(s);
             }
 
             @Override
@@ -149,7 +140,7 @@ public class LocalSongsActivity extends BasePlayMusicActivity {
 
             }
         });
-        mRvLocalsongs.setAdapter(sAdapter);
+        mRvLocalsongs.setAdapter(mAdapter);
         mRvLocalsongs.setLayoutManager(new LinearLayoutManager(this));
         mRvLocalsongs.addItemDecoration(new DividerDecoration(this, 0, Utils.LOCALSONGS_ACTIVITY_DIVIDER_TYPE));
     }

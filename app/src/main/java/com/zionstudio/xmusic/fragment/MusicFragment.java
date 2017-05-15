@@ -27,6 +27,7 @@ import com.zionstudio.videoapp.okhttp.request.RequestParams;
 import com.zionstudio.xmusic.MyApplication;
 import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.activity.LocalSongsActivity;
+import com.zionstudio.xmusic.activity.RecentlyPlayedActivity;
 import com.zionstudio.xmusic.adapter.MusicFgItemAdapter;
 import com.zionstudio.xmusic.adapter.MusicFgPlaylistAdapter;
 import com.zionstudio.xmusic.listener.OnItemClickListener;
@@ -129,13 +130,12 @@ public class MusicFragment extends Fragment {
         mItemAdapter = new MusicFgItemAdapter(this.getContext(), mItemTitle, mItemIcon, new OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                Utils.makeToast("点击了：" + position);
                 switch (position) {
                     case 0:
                         startActivity(new Intent(MusicFragment.this.getContext(), LocalSongsActivity.class));
                         break;
                     case 1:
-
+                        startActivity(new Intent(MusicFragment.this.getContext(), RecentlyPlayedActivity.class));
                         break;
                 }
             }

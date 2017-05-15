@@ -1,11 +1,13 @@
 package com.zionstudio.xmusic.util;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.MediaMetadataRetriever;
 import android.os.Build;
 
+import com.zionstudio.xmusic.MyApplication;
 import com.zionstudio.xmusic.model.Song;
 
 import java.io.ByteArrayOutputStream;
@@ -133,7 +135,7 @@ public class BitmapUtils {
     }
 
     /**
-     * 根据从字节数组中创建符合期望长宽的压缩后的Bitmap
+     * 根据字节数组创建符合期望长宽的压缩后的Bitmap
      *
      * @param bytes
      * @param reqWidth
@@ -149,5 +151,23 @@ public class BitmapUtils {
         //无需透明通道
         options.inPreferredConfig = Bitmap.Config.RGB_565;
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+    }
+
+    /**
+     * 根据资源文件创建符合期望长宽的压缩后的Bitmap
+     *
+     * @param res
+     * @param resID
+     * @param reqWidth
+     * @param reqHeight
+     * @return
+     */
+    public static Bitmap decodeSampleBitmapFromResource(Resources res, int resID, int reqWidth, int reqHeight) {
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeResource(res, resID, options);
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+        options.inJustDecodeBounds = false;
+        return BitmapFactory.decodeResource(res, resID, options);
     }
 }

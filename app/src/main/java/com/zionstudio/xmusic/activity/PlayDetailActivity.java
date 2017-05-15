@@ -18,7 +18,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
@@ -70,7 +69,7 @@ public class PlayDetailActivity extends BaseActivity {
     SeekBar mSeekBar;
     //若打开该页面时，正在播放音乐，则唱针动画时间为0，直接旋转CD，否则唱针动画时长为500.
     private static final int STYLUS_ANIM_DURATION_ALREADY_PLAYED = 0;
-    private static final int STYLUS_ANIM_DURATION_READY_PLAY = 500;
+    private static final int STYLUS_ANIM_DURATION_READY_PLAY = 300;
     @BindView(R.id.tv_progress)
     TextView mTvProgress;
     @BindView(R.id.tv_duration)
@@ -165,11 +164,9 @@ public class PlayDetailActivity extends BaseActivity {
         if (mCover != null) {
             mCover.recycle();
         }
-        Log.e(TAG, "CD封面原始大小:" + BitmapUtils.getBitmapsize(mCover));
         mCoverBytes = BitmapUtils.getCoverByteArray(mService.getPlayingSong());
         if (mCoverBytes != null) {
             mCover = BitmapUtils.decodeSampleBitmapFromBytes(mCoverBytes, (int) ((2 / 3f) * mMpv.getCDSize()), (int) ((2 / 3f) * mMpv.getCDSize()));
-            Log.e(TAG, "CD封面压缩后的大小:" + BitmapUtils.getBitmapsize(mCover));
         } else {
             mCover = null;
         }
@@ -234,7 +231,6 @@ public class PlayDetailActivity extends BaseActivity {
 
 
     public void setBackgroundDrawable() {
-//        final float widthHeightSize = (float) (Utils.getScreenWidth() * 1.0 /Utils.getScreenHeight() * 1.0);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -262,25 +258,40 @@ public class PlayDetailActivity extends BaseActivity {
         }).start();
     }
 
+    /**
+     * 获取播放详情页的经过模糊处理的背景图片，具体解析看注释
+     *
+     * @return
+     */
     private Drawable getBackgroundDrawable() {
-        final float widthHeightSize = (float) (Utils.getScreenWidth() * 1.0 / Utils.getScreenHeight());
+        //专辑一般是正方形，因此按屏幕宽高比来裁剪图片，防止图片被拉伸。
+        final float aspectRatio = (float) (Utils.getScreenWidth() * 1.0 / Utils.getScreenHeight());
         Bitmap bitmap;
         if (mCoverBytes != null) {
             bitmap = BitmapUtils.decodeSampleBitmapFromBytes(mCoverBytes, Utils.getScreenWidth(), Utils.getScreenHeight());
         } else {
             bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.cover);
         }
-        int cropBitmapWidth = (int) (widthHeightSize * bitmap.getHeight());
+        //图片高度无需变动，裁剪图片宽，使宽高比与屏幕宽高比一致即可
+        int cropBitmapWidth = (int) (aspectRatio * bitmap.getHeight());
+        //计算裁剪时，宽开始的坐标
         int cropBitmapWidthX = (int) ((bitmap.getWidth() - cropBitmapWidth) / 2.0);
-
+        //获得裁剪后的Bitmap
         Bitmap cropBitmap = Bitmap.createBitmap(bitmap, cropBitmapWidthX, 0, cropBitmapWidth, bitmap.getHeight());
 
-        Bitmap scaleBitmap = Bitmap.createScaledBitmap(cropBitmap, bitmap.getWidth() / 50, bitmap.getHeight() / 50, false);
+        //先把裁剪后的图片进行压缩，压缩后的图片宽高比失调。但是把图片设置到View上之后，又会进行拉伸。
+        // 因此实际显示的图片宽高比会和以前一样。但是通过createScaledBitmap把图片压缩了。这一点容易疑惑为什么按比例裁剪后又让比例失调。
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(cropBitmap, bitmap.getWidth() / 50, bitmap.getHeight() / 50, false);
 
-        final Bitmap blurBitmap = StackBlur.blur(scaleBitmap, 7, false);
+        //调用高斯模糊算法进行模糊
+        final Bitmap blurBitmap = StackBlur.blur(scaledBitmap, 7, false);
 
         final Drawable foregroundDrawable = new BitmapDrawable(blurBitmap);
         foregroundDrawable.setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
+
+        cropBitmap.recycle();
+        scaledBitmap.recycle();
+        System.gc();
         return foregroundDrawable;
     }
 
@@ -326,7 +337,7 @@ public class PlayDetailActivity extends BaseActivity {
                         break;
                 }
                 ObjectAnimator animStylus = ObjectAnimator.ofFloat(mIvStylus, "rotation", 0, -30);
-                animStylus.setDuration(500);
+                animStylus.setDuration(STYLUS_ANIM_DURATION_READY_PLAY);
                 animStylus.addListener(new Animator.AnimatorListener() {
                     @Override
                     public void onAnimationStart(Animator animation) {
@@ -431,19 +442,9 @@ public class PlayDetailActivity extends BaseActivity {
             case R.id.iv_playbutton:
                 if (mService != null) {
                     if (mService.isPaused()) {
-
-                        needUpdateSeekBar = true;
-                        mHandler.post(mRunnable);
-                        mIvPlaybutton.setImageResource(R.drawable.playing_icon);
-                        mIvPlaybutton.setClickable(false);
-                        startPlayerAnim(STYLUS_ANIM_DURATION_READY_PLAY);
                         mService.continueMusic();
                     } else if (mService.isPlaying()) {
-                        needUpdateSeekBar = false;
-                        mIvPlaybutton.setClickable(false);
-                        hangPlayerAnim(PlayMusicService.PAUSE_MUSIC);
                         mService.pauseMusic();
-                        mIvPlaybutton.setImageResource(R.drawable.paused_icon);
                     }
                 }
                 break;
@@ -451,32 +452,10 @@ public class PlayDetailActivity extends BaseActivity {
                 this.finish();
                 break;
             case R.id.iv_presong:
-                if (sPlayingIndex > 0) {
-                    //如果还存在上一首，则播放
-                    sPlayingIndex--;
-                    mService.playMusic(sPlayingList.get(sPlayingIndex));
-//                    if (mCDRotation != null) {
-//                        mCDRotation.cancel();
-//                    }
-//                    mCDRotation = null;
-                    mCDRotation.pause();
-                } else {
-                    Utils.makeToast("上一首是不存在的");
-                }
+                mService.playPrevSong();
                 break;
             case R.id.iv_nextsong:
-                try {
-                    if (sPlayingIndex < sPlayingList.size() - 1) {
-                        //如果还存在下一首，则播放
-                        sPlayingIndex++;
-                        mService.playMusic(sPlayingList.get(sPlayingIndex));
-                        mCDRotation.pause();
-                    } else {
-                        Utils.makeToast("下一首是不存在的");
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                mService.playNextSong();
                 break;
         }
     }
@@ -488,13 +467,26 @@ public class PlayDetailActivity extends BaseActivity {
             String type = intent.getStringExtra("type");
             switch (type) {
                 case "start":
+                    if (mCDRotation != null && mCDRotation.isRunning()) {
+                        mCDRotation.pause();
+                    }
                     updateState();
                     break;
                 case "paused":
+                    needUpdateSeekBar = false;
+                    mIvPlaybutton.setClickable(false);
+                    hangPlayerAnim(PlayMusicService.PAUSE_MUSIC);
+                    mIvPlaybutton.setImageResource(R.drawable.paused_icon);
                     break;
                 case "continue":
+                    needUpdateSeekBar = true;
+                    mHandler.post(mRunnable);
+                    mIvPlaybutton.setImageResource(R.drawable.playing_icon);
+                    mIvPlaybutton.setClickable(false);
+                    startPlayerAnim(STYLUS_ANIM_DURATION_READY_PLAY);
                     break;
                 case "stop":
+                    updateState();
                     break;
                 case "end":
                     //没有歌曲播放了

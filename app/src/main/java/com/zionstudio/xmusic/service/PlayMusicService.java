@@ -1,14 +1,26 @@
 package com.zionstudio.xmusic.service;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.util.Log;
+import android.support.transition.Visibility;
+import android.support.v7.app.NotificationCompat;
+import android.support.v7.widget.ViewStubCompat;
+import android.view.View;
+import android.widget.RemoteViews;
 
+import com.zionstudio.xmusic.R;
+import com.zionstudio.xmusic.activity.PlayDetailActivity;
 import com.zionstudio.xmusic.model.Song;
 import com.zionstudio.xmusic.util.BitmapUtils;
 import com.zionstudio.xmusic.util.Utils;
@@ -37,7 +49,11 @@ public class PlayMusicService extends Service {
     private final IBinder mBinder = new PlayMusicBinder();
     private static Bitmap sCover;
 
-    private static PlayMusicService sPlayMusicService;
+    private static final String NOTIFICATION_ACTION = "com.zionstudio.xmusic.notification";
+    private final int PLAY_BUTTON = 0;
+    private final int NEXT_BUTTON = 1;
+    private NotificationReceiver mReceiver = null;
+    private final int NOTIFICATION_ID = 1025; //Notification的ID
 
     @Nullable
     @Override
@@ -48,12 +64,6 @@ public class PlayMusicService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-
-//        if (sPlayMusicService == null) {
-//            sPlayMusicService = this;
-//        }
-
-        Log.e(TAG, "on PlayMusicService create");
         if (sPlayer == null) {
             sPlayer = new MediaPlayer();
             sPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -71,6 +81,9 @@ public class PlayMusicService extends Service {
                 }
             });
         }
+        mReceiver = new NotificationReceiver();
+        IntentFilter filter = new IntentFilter(NOTIFICATION_ACTION);
+        registerReceiver(mReceiver, filter);
     }
 
     @Override
@@ -104,6 +117,7 @@ public class PlayMusicService extends Service {
                 Intent intent = new Intent("com.zionstudio.xmusic.playstate");
                 intent.putExtra("type", "start");
                 sendBroadcast(intent);
+                sendNotification();
             } catch (IOException e) {
                 e.printStackTrace();
                 Intent intent = new Intent("com.zionstudio.xmusic.playstate");
@@ -111,6 +125,62 @@ public class PlayMusicService extends Service {
                 sendBroadcast(intent);
             }
         }
+    }
+
+    private void sendNotification() {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        RemoteViews views = new RemoteViews(getPackageName(), R.layout.view_notification);
+        Bitmap bitmap;
+        if (isPlaying() || isPaused()) {
+            //加载封面图片
+            byte[] bytes = BitmapUtils.getCoverByteArray(playingSong);
+            if (bytes != null) {
+                bitmap = BitmapUtils.decodeSampleBitmapFromBytes(bytes, Utils.dp2px(this, 68), Utils.dp2px(this, 68));
+            } else {
+                bitmap = BitmapUtils.decodeSampleBitmapFromResource(getResources(), R.drawable.cover_square, Utils.dp2px(this, 68), Utils.dp2px(this, 68));
+            }
+            //设置歌曲名和演唱者
+            views.setTextViewText(R.id.tv_title_notification, playingSong.title);
+            views.setViewVisibility(R.id.tv_artist_notification, View.VISIBLE);
+            views.setTextViewText(R.id.tv_artist_notification, playingSong.artist);
+        } else {
+            //当未播放时，重置通知栏样式
+            bitmap = BitmapUtils.decodeSampleBitmapFromResource(getResources(), R.drawable.cover_square, Utils.dp2px(this, 68), Utils.dp2px(this, 68));
+            views.setTextViewText(R.id.tv_title_notification, "当前未播放音乐");
+            views.setViewVisibility(R.id.tv_artist_notification, View.GONE);
+        }
+        //设置播放按钮图标
+        if (isPlaying()) {
+            views.setImageViewResource(R.id.iv_playbutton_notification, R.drawable.a_2);
+        } else {
+            views.setImageViewResource(R.id.iv_playbutton_notification, R.drawable.a_4);
+        }
+        views.setImageViewBitmap(R.id.iv_cover_notification, bitmap);
+        Notification notification;
+        //给按钮设置事件
+        Intent btnIntent = new Intent(NOTIFICATION_ACTION);
+        btnIntent.putExtra("ButtonID", PLAY_BUTTON);
+        PendingIntent playBtnIntent = PendingIntent.getBroadcast(this, 0, btnIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        views.setOnClickPendingIntent(R.id.iv_playbutton_notification, playBtnIntent);
+
+        btnIntent.putExtra("ButtonID", NEXT_BUTTON);
+        PendingIntent nextBtnIntent = PendingIntent.getBroadcast(this, 1, btnIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        views.setOnClickPendingIntent(R.id.iv_nextsong_notification, nextBtnIntent);
+
+        //设置点击进入播放详情页
+        Intent intent = new Intent(this, PlayDetailActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        builder.setContent(views)
+                .setWhen(System.currentTimeMillis())
+                .setTicker("正在播放")
+                .setPriority(Notification.PRIORITY_DEFAULT)
+                .setSmallIcon(R.mipmap.ic_launcher);
+        notification = builder.build();
+        //一直显示直到用户响应
+        notification.flags = Notification.FLAG_ONGOING_EVENT;
+        notification.contentIntent = pendingIntent;
+        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        manager.notify(NOTIFICATION_ID, notification);
     }
 
     /**
@@ -123,6 +193,7 @@ public class PlayMusicService extends Service {
             Intent intent = new Intent("com.zionstudio.xmusic.playstate");
             intent.putExtra("type", "paused");
             sendBroadcast(intent);
+            sendNotification();
         }
     }
 
@@ -135,6 +206,7 @@ public class PlayMusicService extends Service {
             Intent intent = new Intent("com.zionstudio.xmusic.playstate");
             intent.putExtra("type", "stop");
             sendBroadcast(intent);
+            sendNotification();
         }
     }
 
@@ -147,6 +219,7 @@ public class PlayMusicService extends Service {
         Intent intent = new Intent("com.zionstudio.xmusic.playstate");
         intent.putExtra("type", "continue");
         sendBroadcast(intent);
+        sendNotification();
     }
 
     /**
@@ -192,7 +265,7 @@ public class PlayMusicService extends Service {
      * 加载正在播放的歌曲的封面
      */
     private void loadCover() {
-        Bitmap bitmap = BitmapUtils.getCover(playingSong);
+//        Bitmap bitmap = BitmapUtils.getCover(playingSong);
     }
 
     /**
@@ -231,11 +304,40 @@ public class PlayMusicService extends Service {
         return 0f;
     }
 
+    /**
+     * 播放下一首歌，如果存在的话
+     */
+    public void playNextSong() {
+        if (sPlayingIndex < sPlayingList.size() - 1) {
+            //如果还存在下一首，则播放
+            sPlayingIndex++;
+            this.playMusic(sPlayingList.get(sPlayingIndex));
+            sendNotification();
+        } else {
+            Utils.makeToast("下一首是不存在的");
+        }
+    }
+
+    /**
+     * 播放上一首歌，如果存在的话
+     */
+    public void playPrevSong() {
+        if (sPlayingIndex > 0) {
+            //如果还存在上一首，则播放
+            sPlayingIndex--;
+            this.playMusic(sPlayingList.get(sPlayingIndex));
+            sendNotification();
+        } else {
+            Utils.makeToast("上一首是不存在的");
+        }
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         //释放MediaPlayer
         sPlayer.release();
+        unregisterReceiver(mReceiver);
     }
 
     /**
@@ -252,6 +354,26 @@ public class PlayMusicService extends Service {
     public class PlayMusicBinder extends Binder {
         public PlayMusicService getService() {
             return PlayMusicService.this;
+        }
+    }
+
+    class NotificationReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int btnID = intent.getIntExtra("ButtonID", -1);
+            switch (btnID) {
+                case PLAY_BUTTON:
+                    if (PlayMusicService.this.isPlaying()) {
+                        PlayMusicService.this.pauseMusic();
+                    } else if (PlayMusicService.this.isPaused()) {
+                        PlayMusicService.this.continueMusic();
+                    }
+                    break;
+                case NEXT_BUTTON:
+                    PlayMusicService.this.playNextSong();
+                    break;
+            }
         }
     }
 }

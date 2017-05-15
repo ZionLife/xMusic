@@ -36,6 +36,11 @@
 
         <activity
             android:name=".activity.PlayDetailActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"/>
+
+        <activity
+            android:name=".activity.RecentlyPlayedActivity"
             android:screenOrientation="portrait"/>
 
         <service

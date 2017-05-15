@@ -1,5 +1,7 @@
 package com.zionstudio.xmusic.activity;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -7,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -14,6 +17,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -28,17 +32,15 @@ import com.zionstudio.xmusic.view.CircleTransform;
 import com.zionstudio.xmusic.view.ShadowTransform;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 import static com.zionstudio.xmusic.MyApplication.sPlayingIndex;
 import static com.zionstudio.xmusic.MyApplication.sPlayingList;
 import static com.zionstudio.xmusic.MyApplication.sRecentlyPlayedList;
 
-public class MainActivity extends BasePlayMusicActivity {
+public class MainActivity extends BasePlaybarActivity {
     private static final String TAG = "MainActivity";
     private static ArrayList<Fragment> sFragmentList = new ArrayList<Fragment>();
     private static FragmentManager sFM = null;
@@ -82,20 +84,6 @@ public class MainActivity extends BasePlayMusicActivity {
     @Override
     protected void initData() {
         super.initData();
-        SharedPreferences sp = getSharedPreferences("PlayingInfo", Context.MODE_PRIVATE);
-        String playingList = sp.getString("PlayingList", null);
-        if (playingList != null) {
-            sPlayingList = (List<Song>) Utils.String2Object(playingList);
-        } else {
-            sPlayingList = new ArrayList<Song>();
-        }
-        sPlayingIndex = sp.getInt("PlayingIndex", -1);
-        String recentlyPlayedList = sp.getString("RecentlyPlayedList", null);
-        if (recentlyPlayedList != null) {
-            sRecentlyPlayedList = (List<Song>) Utils.String2Object(recentlyPlayedList);
-        } else {
-            sRecentlyPlayedList = new ArrayList<Song>();
-        }
     }
 
     @Override
@@ -143,6 +131,20 @@ public class MainActivity extends BasePlayMusicActivity {
             }
         });
     }
+
+//    private void setupNotification() {
+//        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+//        RemoteViews views = new RemoteViews(getPackageName(), R.layout.view_notification);
+//        Notification notification;
+//        builder.setContent(views)
+//                .setWhen(System.currentTimeMillis())
+//                .setTicker("正在播放")
+//                .setPriority(Notification.PRIORITY_DEFAULT)
+//                .setSmallIcon(R.mipmap.ic_launcher);
+//        notification = builder.build();
+//        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//        manager.notify(1, notification);
+//    }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {

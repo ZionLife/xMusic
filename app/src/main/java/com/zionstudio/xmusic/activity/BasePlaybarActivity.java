@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -18,12 +17,10 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
 import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.model.Song;
 import com.zionstudio.xmusic.service.PlayMusicService;
 import com.zionstudio.xmusic.util.BitmapUtils;
-import com.zionstudio.xmusic.util.Utils;
 import com.zionstudio.xmusic.view.RoundProgress;
 
 import java.util.Timer;
@@ -34,16 +31,16 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 /**
- * Base activity for all activities playing music.
+ * Base activity for every activitie that has playbar.
  * Created by Administrator on 2017/5/1 0001.
  */
 
-public abstract class BasePlayMusicActivity extends BaseActivity {
+public abstract class BasePlaybarActivity extends BaseActivity {
     protected static ServiceConnection sConnection;
     protected static PlayMusicService sService;
     protected Song playingSong;
     protected static View sPlayingBar;
-    private static final String TAG = "BasePlayMusicActivity";
+    private static final String TAG = "BasePlaybarActivity";
     private static TimerTask sTimerTask;
     private static Timer sTimer;
 
@@ -65,9 +62,10 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
     private PlayStateReceiver mReceiver;
     private Handler mHandler = new Handler();
     private Runnable mRunnable;
-    private boolean needUpdateProgress = false;
+    private boolean mNeedUpdateProgress = false;
     private ServiceConnection mConn = null;
     private Bitmap mCover;
+    private boolean mActivityIsInvisible = false;
 
     protected void initData() {
 
@@ -97,8 +95,9 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
             @Override
             public void run() {
                 updateProgress();
-                if (needUpdateProgress) {
+                if (mNeedUpdateProgress) {
                     mHandler.postDelayed(this, 1000);
+//                    Log.e(TAG, "mNeedUpdateProgress");
                 }
             }
         };
@@ -130,45 +129,60 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        mActivityIsInvisible = false;
         //activity每次可见时都更新状态栏
-        updatePlayingBar();
+        updatePlaybar();
         mHandler.post(mRunnable);
         //如果正在播放音乐则需要循环更新进度，置needUpdateProgress为true
         if (sService != null && sService.isPlaying()) {
-            needUpdateProgress = true;
+            mNeedUpdateProgress = true;
         }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        needUpdateProgress = false;
+        mNeedUpdateProgress = false;
+        mActivityIsInvisible = true;
     }
 
     /**
      * 更新状态栏
      */
-    protected void updatePlayingBar() {
+    protected void updatePlaybar() {
         if (sService != null) {
-            if (sService.isPlaying()) {
+            if (sService.isPlaying() || sService.isPaused()) {
                 Song s = sService.getPlayingSong();
                 //给状态栏设置歌曲名和歌手
                 mTvTitlePlaying.setText(s.title);
                 mTvArtistPlaying.setVisibility(View.VISIBLE);
                 mTvArtistPlaying.setText(s.artist);
                 //获取专辑封面并设置到状态栏
-                byte[] coverByteArray = BitmapUtils.getCoverByteArray(sService.getPlayingSong());
+                final byte[] coverByteArray = BitmapUtils.getCoverByteArray(sService.getPlayingSong());
                 if (mCover != null) {
                     mCover.recycle();
+                    mCover = null;
                 }
-                if (coverByteArray != null) {
-                    mCover = BitmapUtils.decodeSampleBitmapFromBytes(coverByteArray, mIvCoverPlaying.getWidth(), mIvCoverPlaying.getHeight());
-                }
-                if (mCover != null) {
-                    mIvCoverPlaying.setImageBitmap(mCover);
-                } else {
-                    mIvCoverPlaying.setImageResource(R.drawable.default_cover);
-                }
+
+                //由于加载专辑图片时，要根据view的长宽来进行压缩，当前代码是在onCreate生命周期中，view的测量可能没有完成，获取的长宽可能为0，
+                // 因此通过view.post(Runnable)的方式来处理，保证以下代码执行时，该View已经测量完成。
+                mIvCoverPlaying.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (coverByteArray != null) {
+                            mCover = BitmapUtils.decodeSampleBitmapFromBytes(coverByteArray, mIvCoverPlaying.getWidth(), mIvCoverPlaying.getHeight());
+//                            Log.e(TAG, "Cover size1:" + BitmapUtils.getBitmapsize(mCover));
+//                            //进行对比，可以发现压缩前后大小是相差很大的。
+//                            Bitmap cover = BitmapFactory.decodeByteArray(coverByteArray, 0, coverByteArray.length);
+//                            Log.e(TAG, "Cover size2:" + BitmapUtils.getBitmapsize(cover));
+                        }
+                        if (mCover != null) {
+                            mIvCoverPlaying.setImageBitmap(mCover);
+                        } else {
+                            mIvCoverPlaying.setImageResource(R.drawable.default_cover);
+                        }
+                    }
+                });
             }
             updateProgress();
         }
@@ -200,27 +214,32 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
                 }
                 break;
             case R.id.ll_playbar:
-                startActivity(new Intent(BasePlayMusicActivity.this, PlayDetailActivity.class));
+                startActivity(new Intent(BasePlaybarActivity.this, PlayDetailActivity.class));
+                break;
         }
     }
 
     class PlayStateReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if (mActivityIsInvisible) {
+                Log.e(TAG, "1111");
+                return;
+            }
             String type = intent.getStringExtra("type");
             switch (type) {
                 case "start":
-                    BasePlayMusicActivity.this.updatePlayingBar();
+                    BasePlaybarActivity.this.updatePlaybar();
                     mHandler.post(mRunnable);
-                    needUpdateProgress = true;
+                    mNeedUpdateProgress = true;
                     break;
                 case "paused":
-                    BasePlayMusicActivity.this.updatePlayingBar();
-                    needUpdateProgress = false;
+                    BasePlaybarActivity.this.updatePlaybar();
+                    mNeedUpdateProgress = false;
                     break;
                 case "continue":
-                    BasePlayMusicActivity.this.updatePlayingBar();
-                    needUpdateProgress = true;
+                    BasePlaybarActivity.this.updatePlaybar();
+                    mNeedUpdateProgress = true;
                     mHandler.post(mRunnable);
                     break;
                 case "stop":
@@ -229,7 +248,7 @@ public abstract class BasePlayMusicActivity extends BaseActivity {
                     mTvTitlePlaying.setText("播放列表为空");
                     mTvArtistPlaying.setVisibility(View.GONE);
                     mIvCoverPlaying.setImageResource(R.drawable.default_cover);
-                    needUpdateProgress = false;
+                    mNeedUpdateProgress = false;
                     break;
             }
         }

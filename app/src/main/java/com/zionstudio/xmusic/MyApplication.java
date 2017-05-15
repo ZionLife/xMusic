@@ -37,5 +37,23 @@ public class MyApplication extends Application {
                 MyApplication.sUserInfo = (UserInfo) Utils.String2Object(userInfo);
             }
         }
+
+        SharedPreferences sp = getSharedPreferences("PlayingInfo", Context.MODE_PRIVATE);
+        String playingList = sp.getString("PlayingList", null);
+        //取出播放列表
+        if (playingList != null) {
+            sPlayingList = (List<Song>) Utils.String2Object(playingList);
+        } else {
+            sPlayingList = new ArrayList<Song>();
+        }
+        //取出播放歌曲索引
+        sPlayingIndex = sp.getInt("PlayingIndex", -1);
+        //取出最近播放列表
+        String recentlyPlayedList = sp.getString("RecentlyPlayedList", null);
+        if (recentlyPlayedList != null) {
+            sRecentlyPlayedList = (List<Song>) Utils.String2Object(recentlyPlayedList);
+        } else {
+            sRecentlyPlayedList = new ArrayList<Song>();
+        }
     }
 }
