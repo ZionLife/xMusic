@@ -25,10 +25,6 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-import static com.zionstudio.xmusic.MyApplication.sPlayingIndex;
-import static com.zionstudio.xmusic.MyApplication.sPlayingList;
-
-
 /**
  * Created by Administrator on 2017/4/26 0026.
  */
@@ -126,13 +122,14 @@ public class LocalSongsActivity extends BasePlaybarActivity {
                     }
                 }
                 //如果当前播放列表和本地音乐不同，则将本地音乐添加到当前播放列表中
-                if (sPlayingList != null && (!sPlayingList.containsAll(mLocalSongs) || !mLocalSongs.containsAll(sPlayingList))) {
-                    sPlayingList.addAll(mLocalSongs);
+                if (MyApplication.getMyApplication().mPlayingList != null
+                        && (!sApplication.mPlayingList.containsAll(mLocalSongs) || !mLocalSongs.containsAll(sApplication.mPlayingList))) {
+                    sApplication.mPlayingList.addAll(mLocalSongs);
                 }
                 //记录下列表索引
-                sPlayingIndex = position;
+                sApplication.mPlayingIndex = position;
                 //添加进最近播放列表
-                MyApplication.sRecentlyPlayedList.add(s);
+                sApplication.mRecentlyPlayedList.add(s);
             }
 
             @Override

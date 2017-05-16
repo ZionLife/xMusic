@@ -3,23 +3,13 @@ package com.zionstudio.xmusic.activity;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
-import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import com.zionstudio.xmusic.MyApplication;
 import com.zionstudio.xmusic.R;
-import com.zionstudio.xmusic.model.user.UserInfo;
 import com.zionstudio.xmusic.util.Utils;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 
 /**
  * Created by Administrator on 2017/4/21 0021.
@@ -40,7 +30,7 @@ public class SplashActivity extends BaseActivity {
     @Override
     protected void initData() {
         //初始化用户信息
-        if (MyApplication.sUserInfo == null) {
+        if (sApplication.mUserInfo == null) {
             flag = 0;
         } else {
             flag = 1;

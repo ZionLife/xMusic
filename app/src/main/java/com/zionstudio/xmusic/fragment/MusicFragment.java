@@ -3,8 +3,6 @@ package com.zionstudio.xmusic.fragment;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -27,6 +25,7 @@ import com.zionstudio.videoapp.okhttp.request.RequestParams;
 import com.zionstudio.xmusic.MyApplication;
 import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.activity.LocalSongsActivity;
+import com.zionstudio.xmusic.activity.PlaylistDetailActivity;
 import com.zionstudio.xmusic.activity.RecentlyPlayedActivity;
 import com.zionstudio.xmusic.adapter.MusicFgItemAdapter;
 import com.zionstudio.xmusic.adapter.MusicFgPlaylistAdapter;
@@ -96,7 +95,7 @@ public class MusicFragment extends Fragment {
     private void getMyPlaylist() {
         //获取我的歌单
         HashMap<String, String> map = new HashMap<>();
-        map.put("uid", MyApplication.sUserInfo.account.id);
+        map.put("uid", MyApplication.getMyApplication().mUserInfo.account.id);
         RequestParams params = new RequestParams(map);
         Request request = CommonRequest.createGetRequest(UrlUtils.PLAYLIST, params);
         DisposeDataListener listener = new DisposeDataListener() {
@@ -108,17 +107,14 @@ public class MusicFragment extends Fragment {
                     mPlaylist.clear();
                     mPlaylist.addAll(list.playlist);
                     mPlaylistAdapter.notifyDataSetChanged();
-                    Log.e(TAG, "SUCCESS");
                     mSrlMusicfg.setRefreshing(false);
                 } else {
                     mSrlMusicfg.setRefreshing(false);
-                    Log.e(TAG, "failed onSueccess");
                 }
             }
 
             @Override
             public void onFailure(Object responseObj) {
-                Log.e(TAG, "failed onFailure");
                 mSrlMusicfg.setRefreshing(false);
             }
         };
@@ -155,6 +151,9 @@ public class MusicFragment extends Fragment {
             @Override
             public void onItemClick(View view, int position) {
                 Utils.makeToast("点击了歌单的：" + position);
+                Intent intent = new Intent(MusicFragment.this.getContext(), PlaylistDetailActivity.class);
+                intent.putExtra("id", mPlaylist.get(position).id);
+                startActivity(intent);
             }
 
             @Override

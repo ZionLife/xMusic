@@ -1,7 +1,5 @@
 package com.zionstudio.xmusic.activity;
 
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -9,7 +7,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -17,11 +14,9 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.RemoteViews;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
-import com.zionstudio.xmusic.MyApplication;
 import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.adapter.MyFragmentPagerAdapter;
 import com.zionstudio.xmusic.fragment.DiscoverFragment;
@@ -35,10 +30,6 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-
-import static com.zionstudio.xmusic.MyApplication.sPlayingIndex;
-import static com.zionstudio.xmusic.MyApplication.sPlayingList;
-import static com.zionstudio.xmusic.MyApplication.sRecentlyPlayedList;
 
 public class MainActivity extends BasePlaybarActivity {
     private static final String TAG = "MainActivity";
@@ -132,20 +123,6 @@ public class MainActivity extends BasePlaybarActivity {
         });
     }
 
-//    private void setupNotification() {
-//        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-//        RemoteViews views = new RemoteViews(getPackageName(), R.layout.view_notification);
-//        Notification notification;
-//        builder.setContent(views)
-//                .setWhen(System.currentTimeMillis())
-//                .setTicker("正在播放")
-//                .setPriority(Notification.PRIORITY_DEFAULT)
-//                .setSmallIcon(R.mipmap.ic_launcher);
-//        notification = builder.build();
-//        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-//        manager.notify(1, notification);
-//    }
-
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
@@ -166,22 +143,19 @@ public class MainActivity extends BasePlaybarActivity {
     private void setUpDrawer() {
         //设置头像
         try {
-            Picasso.with(this).load(MyApplication.sUserInfo.profile.avatarUrl)
+            Picasso.with(this).load(sApplication.mUserInfo.profile.avatarUrl)
                     .transform(new CircleTransform())
                     .into(mSdvAvatar);
         } catch (Exception e) {
             e.printStackTrace();
-            if (MyApplication.sUserInfo == null) {
-                Log.e(TAG, "sUserInfo == null");
-            }
         }
         //设置背景，调整图片亮度
-        Picasso.with(this).load(MyApplication.sUserInfo.profile.backgroundUrl)
+        Picasso.with(this).load(sApplication.mUserInfo.profile.backgroundUrl)
                 .transform(new ShadowTransform(-80))
                 .into(mIvBg);
 
         //设置昵称
-        mTvNicknam.setText(MyApplication.sUserInfo.profile.nickname);
+        mTvNicknam.setText(sApplication.mUserInfo.profile.nickname);
     }
 
 
@@ -202,18 +176,12 @@ public class MainActivity extends BasePlaybarActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        //将播放列表和最近播放歌曲相关信息保存到SP中
-        SharedPreferences sp = getSharedPreferences("PlayingInfo", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sp.edit();
-        editor.putString("PlayingList", Utils.Object2String(sPlayingList));
-        editor.putInt("PlayingIndex", sPlayingIndex);
-        editor.putString("RecentlyPlayedList", Utils.Object2String(sRecentlyPlayedList == null ? new ArrayList<Song>() : sRecentlyPlayedList));
-        editor.commit();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.e(TAG, "MainActivity destroy");
     }
 
     /**

@@ -43,6 +43,8 @@
             android:name=".activity.RecentlyPlayedActivity"
             android:screenOrientation="portrait"/>
 
+        <activity android:name=".activity.PlaylistDetailActivity"/>
+
         <service
             android:name=".service.PlayMusicService"
             android:enabled="true"

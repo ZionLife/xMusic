@@ -3,9 +3,6 @@ package com.zionstudio.xmusic.activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
-import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -27,7 +24,6 @@ import com.zionstudio.xmusic.view.LoginEt;
 import java.util.HashMap;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import okhttp3.Request;
 
 /**
@@ -52,8 +48,8 @@ public class LoginActivity extends BaseActivity {
     @Override
     protected void initView() {
         super.initView();
-        if (MyApplication.sUserInfo != null) {
-            String str = MyApplication.sUserInfo.account.userName;
+        if (sApplication.mUserInfo != null) {
+            String str = sApplication.mUserInfo.account.userName;
             mEtPhone.setText(str.substring(str.indexOf("_") + 1, str.length()));
         }
 
@@ -143,8 +139,8 @@ public class LoginActivity extends BaseActivity {
             @Override
             public void onSuccess(Object responseObj, String cookie) {
                 Log.e(TAG, "onLoginSuccess");
-                MyApplication.sUserInfo = (UserInfo) responseObj;
-                MyApplication.sUserInfo.setCookies(cookie);
+                sApplication.mUserInfo = (UserInfo) responseObj;
+                sApplication.mUserInfo.setCookies(cookie);
                 updateUserInfo();
                 Utils.skipToMainActivity(LoginActivity.this);
                 LoginActivity.this.finish();
@@ -162,7 +158,7 @@ public class LoginActivity extends BaseActivity {
      * 将用户信息保存到SharedPreferences中
      */
     private void updateUserInfo() {
-        UserInfo i = MyApplication.sUserInfo;
+        UserInfo i = sApplication.mUserInfo;
         SharedPreferences userSP = getSharedPreferences("userSP", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = userSP.edit();
         //将Object转换成String输出

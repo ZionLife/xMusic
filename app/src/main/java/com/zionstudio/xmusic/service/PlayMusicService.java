@@ -8,17 +8,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.support.transition.Visibility;
 import android.support.v7.app.NotificationCompat;
-import android.support.v7.widget.ViewStubCompat;
 import android.view.View;
 import android.widget.RemoteViews;
 
+import com.zionstudio.xmusic.MyApplication;
 import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.activity.PlayDetailActivity;
 import com.zionstudio.xmusic.model.Song;
@@ -26,9 +26,6 @@ import com.zionstudio.xmusic.util.BitmapUtils;
 import com.zionstudio.xmusic.util.Utils;
 
 import java.io.IOException;
-
-import static com.zionstudio.xmusic.MyApplication.sPlayingIndex;
-import static com.zionstudio.xmusic.MyApplication.sPlayingList;
 
 /**
  * Created by Administrator on 2017/4/30 0030.
@@ -39,6 +36,8 @@ public class PlayMusicService extends Service {
     public static final int PAUSE_MUSIC = 1;
     public static final int STOP_MUSIC = 2;
     public static final int END_MUSIC = 3;
+
+    private MyApplication mApplication = MyApplication.getMyApplication();
 
     private static boolean isStop = true;
     private static boolean isPaused = false;
@@ -52,8 +51,10 @@ public class PlayMusicService extends Service {
     private static final String NOTIFICATION_ACTION = "com.zionstudio.xmusic.notification";
     private final int PLAY_BUTTON = 0;
     private final int NEXT_BUTTON = 1;
+    private final int EXIT_BUTTON = 2;
     private NotificationReceiver mReceiver = null;
     private final int NOTIFICATION_ID = 1025; //Notification的ID
+    private NotificationManager mManager;
 
     @Nullable
     @Override
@@ -70,9 +71,9 @@ public class PlayMusicService extends Service {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
                     playingPath = "";
-                    if (sPlayingIndex < sPlayingList.size() - 1) {
-                        sPlayingIndex++;
-                        PlayMusicService.this.playMusic(sPlayingList.get(sPlayingIndex));
+                    if (mApplication.mPlayingIndex < mApplication.mPlayingList.size() - 1) {
+                        mApplication.mPlayingIndex++;
+                        PlayMusicService.this.playMusic(mApplication.mPlayingList.get(mApplication.mPlayingIndex));
                     } else {
                         Intent intent = new Intent("com.zionstudio.xmusic.playstate");
                         intent.putExtra("type", "end");
@@ -159,14 +160,18 @@ public class PlayMusicService extends Service {
         Notification notification;
         //给按钮设置事件
         Intent btnIntent = new Intent(NOTIFICATION_ACTION);
+        //暂停/播放按钮事件
         btnIntent.putExtra("ButtonID", PLAY_BUTTON);
         PendingIntent playBtnIntent = PendingIntent.getBroadcast(this, 0, btnIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         views.setOnClickPendingIntent(R.id.iv_playbutton_notification, playBtnIntent);
-
+        //下一首事件
         btnIntent.putExtra("ButtonID", NEXT_BUTTON);
         PendingIntent nextBtnIntent = PendingIntent.getBroadcast(this, 1, btnIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         views.setOnClickPendingIntent(R.id.iv_nextsong_notification, nextBtnIntent);
-
+        //退出程序事件
+        btnIntent.putExtra("ButtonID", EXIT_BUTTON);
+        PendingIntent exitBtnIntent = PendingIntent.getBroadcast(this, 2, btnIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        views.setOnClickPendingIntent(R.id.iv_close_notification, exitBtnIntent);
         //设置点击进入播放详情页
         Intent intent = new Intent(this, PlayDetailActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
@@ -179,8 +184,8 @@ public class PlayMusicService extends Service {
         //一直显示直到用户响应
         notification.flags = Notification.FLAG_ONGOING_EVENT;
         notification.contentIntent = pendingIntent;
-        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(NOTIFICATION_ID, notification);
+        mManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mManager.notify(NOTIFICATION_ID, notification);
     }
 
     /**
@@ -308,10 +313,10 @@ public class PlayMusicService extends Service {
      * 播放下一首歌，如果存在的话
      */
     public void playNextSong() {
-        if (sPlayingIndex < sPlayingList.size() - 1) {
+        if (mApplication.mPlayingIndex < mApplication.mPlayingList.size() - 1) {
             //如果还存在下一首，则播放
-            sPlayingIndex++;
-            this.playMusic(sPlayingList.get(sPlayingIndex));
+            mApplication.mPlayingIndex++;
+            this.playMusic(mApplication.mPlayingList.get(mApplication.mPlayingIndex));
             sendNotification();
         } else {
             Utils.makeToast("下一首是不存在的");
@@ -322,10 +327,10 @@ public class PlayMusicService extends Service {
      * 播放上一首歌，如果存在的话
      */
     public void playPrevSong() {
-        if (sPlayingIndex > 0) {
+        if (mApplication.mPlayingIndex > 0) {
             //如果还存在上一首，则播放
-            sPlayingIndex--;
-            this.playMusic(sPlayingList.get(sPlayingIndex));
+            mApplication.mPlayingIndex--;
+            this.playMusic(mApplication.mPlayingList.get(mApplication.mPlayingIndex));
             sendNotification();
         } else {
             Utils.makeToast("上一首是不存在的");
@@ -337,7 +342,15 @@ public class PlayMusicService extends Service {
         super.onDestroy();
         //释放MediaPlayer
         sPlayer.release();
+
+//        //保存当前播放的歌曲的索引
+//        SharedPreferences sp = getSharedPreferences("PlyaingInfo", Context.MODE_PRIVATE);
+//        SharedPreferences.Editor editor = sp.edit();
+//        editor.putInt("PlayingIndex", mApplication.mPlayingIndex);
+//        editor.commit();
+
         unregisterReceiver(mReceiver);
+        mApplication = null;
     }
 
     /**
@@ -372,6 +385,10 @@ public class PlayMusicService extends Service {
                     break;
                 case NEXT_BUTTON:
                     PlayMusicService.this.playNextSong();
+                    break;
+                case EXIT_BUTTON:
+                    mManager.cancel(NOTIFICATION_ID);
+                    mApplication.exitApplication();
                     break;
             }
         }

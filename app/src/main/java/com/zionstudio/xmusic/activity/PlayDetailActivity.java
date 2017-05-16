@@ -39,9 +39,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-import static com.zionstudio.xmusic.MyApplication.sPlayingIndex;
-import static com.zionstudio.xmusic.MyApplication.sPlayingList;
-
 /**
  * Created by Administrator on 2017/5/3 0003.
  */
