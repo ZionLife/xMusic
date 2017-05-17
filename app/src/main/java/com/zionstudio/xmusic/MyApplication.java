@@ -103,6 +103,13 @@ public class MyApplication extends Application {
         Log.e("MyApplication", "savePlayInfo");
     }
 
+    public void savePlayIndex() {
+        SharedPreferences sp = getSharedPreferences("PlayingInfo", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putInt("PlayingIndex", mPlayingIndex);
+        editor.commit();
+    }
+
     /**
      * 取得MyApplication实例
      *

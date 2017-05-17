@@ -53,6 +53,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        sApplication.savePlayInfo();
+//        sApplication.savePlayInfo();
+        sApplication.savePlayIndex();
     }
 }

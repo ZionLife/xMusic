@@ -71,6 +71,7 @@ public class LocalSongsAdapter extends RecyclerView.Adapter<LocalSongsAdapter.Vi
     class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvName;
         TextView tvAlbum;
+        ImageView ivIsLocal;
         ImageView ivMenu;
         ImageView ivIcon;
         RelativeLayout rl;
@@ -79,6 +80,8 @@ public class LocalSongsAdapter extends RecyclerView.Adapter<LocalSongsAdapter.Vi
             super(itemView);
             tvName = (TextView) itemView.findViewById(R.id.tv_song_name);
             tvAlbum = (TextView) itemView.findViewById(R.id.tv_album_name);
+            ivIsLocal = (ImageView) itemView.findViewById(R.id.iv_isLocal);
+            ivIsLocal.setVisibility(View.VISIBLE);
             ivMenu = (ImageView) itemView.findViewById(R.id.iv_menu);
             ivIcon = (ImageView) itemView.findViewById(R.id.iv_icon);
             rl = (RelativeLayout) itemView.findViewById(R.id.rl_localsongs);

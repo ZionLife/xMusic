@@ -7,12 +7,24 @@
                 android:clickable="true"
                 android:foreground="?android:attr/selectableItemBackground">
 
+
+    <TextView
+        android:id="@+id/tv_count_itemsong"
+        android:layout_width="40dp"
+        android:layout_height="50dp"
+        android:alpha="0.8"
+        android:gravity="center"
+        android:text="1"
+        android:textSize="16dp"
+        android:visibility="gone"/>
+
     <LinearLayout
-        android:id="@+id/ll_localsongs"
+        android:id="@+id/ll_itemsong"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_centerVertical="true"
         android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@id/tv_count_itemsong"
         android:gravity="center_vertical"
         android:orientation="vertical">
 
@@ -21,6 +33,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="left"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:text="离开地球表面"
             android:textColor="@color/black"
             android:textSize="15sp"/>
@@ -33,15 +47,18 @@
             android:orientation="horizontal">
 
             <ImageView
+                android:id="@+id/iv_isLocal"
                 android:layout_width="12dp"
                 android:layout_height="12dp"
-                android:src="@drawable/download_full"/>
+                android:src="@drawable/download_full"
+                android:visibility="gone"/>
 
             <ImageView
                 android:id="@+id/iv_icon"
                 android:layout_width="12dp"
                 android:layout_height="12dp"
                 android:layout_marginLeft="3dp"
+                android:visibility="gone"
                 />
 
             <TextView
@@ -50,6 +67,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="3dp"
                 android:alpha="0.5"
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:text="五月天-离开地球表面 Jump!"
                 android:textColor="@color/black"
                 android:textSize="11sp"/>

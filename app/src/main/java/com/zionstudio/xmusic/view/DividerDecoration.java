@@ -62,7 +62,7 @@ public class DividerDecoration extends RecyclerView.ItemDecoration {
                 left = (int) ll.getX();
                 break;
             case Utils.LOCALSONGS_ACTIVITY_DIVIDER_TYPE:
-                LinearLayout llLocalSongs = (LinearLayout) parent.findViewById(R.id.ll_localsongs);
+                LinearLayout llLocalSongs = (LinearLayout) parent.findViewById(R.id.ll_itemsong);
                 left = (int) llLocalSongs.getX();
                 break;
         }
