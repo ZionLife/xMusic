@@ -23,6 +23,7 @@ public class MyApplication extends Application {
     public UserInfo mUserInfo = null;
     public static Context sContext;
     public List<Song> mPlayingList;
+    public List<Song> mLocalSongs;
     public List<Song> mRecentlyPlayedList;
     public int mPlayingIndex = 0;
     private List<Activity> mActivities = new ArrayList<Activity>();
@@ -58,6 +59,13 @@ public class MyApplication extends Application {
             mRecentlyPlayedList = (List<Song>) Utils.String2Object(recentlyPlayedList);
         } else {
             mRecentlyPlayedList = new ArrayList<Song>();
+        }
+        //取出本地歌曲
+        String localSongs = sp.getString("LocalSongs", null);
+        if (localSongs != null) {
+            mLocalSongs = (List<Song>) Utils.String2Object(localSongs);
+        } else {
+            mLocalSongs = new ArrayList<Song>();
         }
     }
 
@@ -99,6 +107,10 @@ public class MyApplication extends Application {
         editor.putInt("PlayingIndex", mPlayingIndex);
         editor.putString("RecentlyPlayedList", Utils.Object2String(
                 mRecentlyPlayedList == null ? new ArrayList<Song>() : mRecentlyPlayedList));
+
+//        SharedPreferences sp = getSharedPreferences("PlayingInfo", MODE_PRIVATE);
+//        SharedPreferences.Editor editor = sp.edit();
+        editor.putString("LocalSongs", Utils.Object2String(mLocalSongs));
         editor.commit();
         Log.e("MyApplication", "savePlayInfo");
     }

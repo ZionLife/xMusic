@@ -11,4 +11,5 @@ public class Track {
     public int id;
     public ArrayList<Artist> ar;
     public ArrayList<Album> al;
+    public long mv;
 }

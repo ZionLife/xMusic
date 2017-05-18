@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -74,7 +75,7 @@ public class LocalSongsAdapter extends RecyclerView.Adapter<LocalSongsAdapter.Vi
         ImageView ivIsLocal;
         ImageView ivMenu;
         ImageView ivIcon;
-        RelativeLayout rl;
+        LinearLayout rl;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -84,7 +85,7 @@ public class LocalSongsAdapter extends RecyclerView.Adapter<LocalSongsAdapter.Vi
             ivIsLocal.setVisibility(View.VISIBLE);
             ivMenu = (ImageView) itemView.findViewById(R.id.iv_menu);
             ivIcon = (ImageView) itemView.findViewById(R.id.iv_icon);
-            rl = (RelativeLayout) itemView.findViewById(R.id.rl_localsongs);
+            rl = (LinearLayout) itemView.findViewById(R.id.rl_localsongs);
         }
     }
 }

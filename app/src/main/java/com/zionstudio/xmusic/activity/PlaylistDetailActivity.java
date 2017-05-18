@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 
 import com.zionstudio.videoapp.okhttp.CommonOkHttpClient;
 import com.zionstudio.videoapp.okhttp.listener.DisposeDataHandler;
@@ -14,6 +16,7 @@ import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.adapter.PlaylistDetailAdapter;
 import com.zionstudio.xmusic.model.playlist.Playlist;
 import com.zionstudio.xmusic.model.playlist.PlaylistDetail;
+import com.zionstudio.xmusic.model.playlist.Privilege;
 import com.zionstudio.xmusic.model.playlist.Track;
 import com.zionstudio.xmusic.util.UrlUtils;
 import com.zionstudio.xmusic.util.Utils;
@@ -40,19 +43,30 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
     private Playlist mPlaylist;
     private List<Track> mTracks = new ArrayList<Track>();
     private PlaylistDetailAdapter mAdapter;
+    private List<Privilege> mPrivileges = new ArrayList<Privilege>();
 
     @Override
     protected int getLayoutResID() {
-        return R.layout.activity_playlistdetail2;
+        return R.layout.activity_playlistdetail;
     }
 
     @Override
     protected void initView() {
         super.initView();
-        mAdapter = new PlaylistDetailAdapter(this, mTracks);
+        mAdapter = new PlaylistDetailAdapter(this, mTracks, mPrivileges);
         mRvPlaylistdetail.setAdapter(mAdapter);
         mRvPlaylistdetail.setLayoutManager(new LinearLayoutManager(this));
-        mRvPlaylistdetail.addItemDecoration(new DividerDecoration(this, 0, Utils.LOCALSONGS_ACTIVITY_DIVIDER_TYPE));
+        mAdapter.setHeaderView(LayoutInflater.from(this).inflate(R.layout.view_header_playlistdetail, mRvPlaylistdetail, false));
+        mRvPlaylistdetail.addItemDecoration(new DividerDecoration(this, 0, Utils.PLAYLISTDETAIL_ACTIVITY_DIVIDER_TYPE));
+
+        //给RecyclerView设置滑动监听
+        mRvPlaylistdetail.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                Log.e(TAG, "滑动X坐标:" + dx + "; Y坐标:" + dy);
+            }
+        });
     }
 
     @Override
@@ -77,6 +91,9 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
                     mPlaylist = mPlaylistDetail.playlist;
                     mTracks.clear();
                     mTracks.addAll(mPlaylist.tracks);
+
+                    mPrivileges.clear();
+                    mPrivileges.addAll(mPlaylistDetail.privileges);
                     mAdapter.notifyDataSetChanged();
                     Log.e(TAG, "设置数据成功");
                 }

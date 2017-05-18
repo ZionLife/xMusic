@@ -1,6 +1,7 @@
 package com.zionstudio.xmusic.activity;
 
 import android.Manifest;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -54,12 +55,17 @@ public class LocalSongsActivity extends BasePlaybarActivity {
         super.initData();
         //查找本地音乐,针对6.0以上系统，先申请权限
         requestReadExternalPermission();
+        //如果允许，则加载本地音乐
+        if (readExternalPermission) {
+            updateLocalMusic();
+        }
     }
 
     private void updateLocalMusic() {
-        mLocalSongs.clear();
-        mLocalSongs.addAll(Utils.getAllMediaList(this));
-
+//        mLocalSongs.clear();
+//        mLocalSongs.addAll(Utils.getAllMediaList(this));
+        sApplication.mLocalSongs.clear();
+        sApplication.mLocalSongs.addAll(Utils.getAllMediaList(this));
     }
 
     /**
@@ -73,11 +79,11 @@ public class LocalSongsActivity extends BasePlaybarActivity {
             if (i != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(permission, 321);
             } else {
-                updateLocalMusic();
+//                updateLocalMusic();
                 readExternalPermission = true;
             }
         } else {
-            updateLocalMusic();
+//            updateLocalMusic();
             readExternalPermission = true;
         }
     }
@@ -95,7 +101,7 @@ public class LocalSongsActivity extends BasePlaybarActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 321) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                updateLocalMusic();
+//                updateLocalMusic();
                 readExternalPermission = true;
             } else {
                 Utils.makeToast("申请权限被拒绝，请前往设置中手动开启。");
@@ -108,10 +114,10 @@ public class LocalSongsActivity extends BasePlaybarActivity {
     protected void initView() {
         super.initView();
         //给RecyclerView设置Adapter
-        mAdapter = new LocalSongsAdapter(this, mLocalSongs, new OnItemClickListener() {
+        mAdapter = new LocalSongsAdapter(this, sApplication.mLocalSongs, new OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                Song s = mLocalSongs.get(position);
+                Song s = sApplication.mLocalSongs.get(position);
                 String path = s.path;
                 if (sService != null) {
                     if (!sService.getPlayingPath().equals(path)) {

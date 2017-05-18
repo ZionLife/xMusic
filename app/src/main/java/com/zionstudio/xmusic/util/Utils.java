@@ -31,6 +31,7 @@ public class Utils {
     public static final int MUSIC_FG_DIVIDER_TYPE = 0;
     public static final int MUSIC_FG_PLAYLIST_DIVIDER_TYPE = 1;
     public static final int LOCALSONGS_ACTIVITY_DIVIDER_TYPE = 2;
+    public static final int PLAYLISTDETAIL_ACTIVITY_DIVIDER_TYPE = 3;
     private static final String TAG = "Utils";
 
     /**

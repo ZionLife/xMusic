@@ -65,6 +65,10 @@ public class DividerDecoration extends RecyclerView.ItemDecoration {
                 LinearLayout llLocalSongs = (LinearLayout) parent.findViewById(R.id.ll_itemsong);
                 left = (int) llLocalSongs.getX();
                 break;
+            case Utils.PLAYLISTDETAIL_ACTIVITY_DIVIDER_TYPE:
+//                left = Utils.dp2px(mContext,mContext.getResources().getDimension(R.dimen.songLeftIconWidth));
+                left = (int) mContext.getResources().getDimension(R.dimen.songLeftIconWidth);
+                break;
         }
 
         int right = parent.getWidth() - parent.getPaddingRight();
@@ -94,6 +98,13 @@ public class DividerDecoration extends RecyclerView.ItemDecoration {
 
     @Override
     public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+        int position = parent.getChildAdapterPosition(view);
+        if (type == Utils.PLAYLISTDETAIL_ACTIVITY_DIVIDER_TYPE) {
+            if (position == 0) {
+                outRect.set(0, 0, 0, 0);
+                return;
+            }
+        }
         outRect.set(0, 0, 0, mDivider.getIntrinsicHeight());
     }
 }

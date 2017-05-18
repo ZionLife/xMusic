@@ -2,4 +2,5 @@
 <resources>
     <dimen name="topBar">75dp</dimen>
     <dimen name="playbar">48dp</dimen>
+    <dimen name="songLeftIconWidth">45dp</dimen>
 </resources>
