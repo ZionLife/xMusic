@@ -3,9 +3,12 @@ package com.zionstudio.xmusic.fragment;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.graphics.drawable.DrawableWrapper;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -153,7 +156,12 @@ public class MusicFragment extends Fragment {
                 Utils.makeToast("点击了歌单的：" + position);
                 Intent intent = new Intent(MusicFragment.this.getContext(), PlaylistDetailActivity.class);
                 intent.putExtra("id", mPlaylist.get(position).id);
+                ImageView iv = (ImageView) view.findViewById(R.id.iv_cover);
+                iv.setDrawingCacheEnabled(true);
+                Bitmap cover = iv.getDrawingCache();
+                intent.putExtra("cover", cover);
                 startActivity(intent);
+                iv.setDrawingCacheEnabled(false);
             }
 
             @Override

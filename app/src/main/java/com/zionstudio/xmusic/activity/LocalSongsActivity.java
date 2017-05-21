@@ -1,7 +1,6 @@
 package com.zionstudio.xmusic.activity;
 
 import android.Manifest;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -12,7 +11,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.zionstudio.xmusic.MyApplication;
 import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.adapter.LocalSongsAdapter;
 import com.zionstudio.xmusic.listener.OnItemClickListener;
@@ -118,7 +116,7 @@ public class LocalSongsActivity extends BasePlaybarActivity {
             @Override
             public void onItemClick(View view, int position) {
                 Song s = sApplication.mLocalSongs.get(position);
-                String path = s.path;
+                String path = s.url;
                 if (sService != null) {
                     if (!sService.getPlayingPath().equals(path)) {
                         //开始播放音乐
@@ -128,9 +126,10 @@ public class LocalSongsActivity extends BasePlaybarActivity {
                     }
                 }
                 //如果当前播放列表和本地音乐不同，则将本地音乐添加到当前播放列表中
-                if (MyApplication.getMyApplication().mPlayingList != null
-                        && (!sApplication.mPlayingList.containsAll(mLocalSongs) || !mLocalSongs.containsAll(sApplication.mPlayingList))) {
-                    sApplication.mPlayingList.addAll(mLocalSongs);
+                if (sApplication.mPlayingList != null
+                        && (!sApplication.mPlayingList.containsAll(sApplication.mLocalSongs) || !sApplication.mLocalSongs.containsAll(sApplication.mPlayingList))) {
+                    sApplication.mPlayingList.clear();
+                    sApplication.mPlayingList.addAll(sApplication.mLocalSongs);
                 }
                 //记录下列表索引
                 sApplication.mPlayingIndex = position;

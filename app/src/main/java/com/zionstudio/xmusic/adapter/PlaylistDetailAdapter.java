@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.zionstudio.xmusic.MyApplication;
 import com.zionstudio.xmusic.R;
+import com.zionstudio.xmusic.listener.OnItemClickListener;
 import com.zionstudio.xmusic.model.Song;
 import com.zionstudio.xmusic.model.playlist.Artist;
 import com.zionstudio.xmusic.model.playlist.PlaylistDetail;
@@ -34,11 +35,13 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
     private List<Track> mData;
     private List<Privilege> mPrivileges;
     private View mHeaderView = null;
+    private OnItemClickListener mListener = null;
 
-    public PlaylistDetailAdapter(Context context, List<Track> tracks, List<Privilege> privileges) {
+    public PlaylistDetailAdapter(Context context, List<Track> tracks, List<Privilege> privileges, OnItemClickListener l) {
         mContext = context;
         mData = tracks;
         mPrivileges = privileges;
+        mListener = l;
     }
 
     public void setHeaderView(View headerView) {
@@ -65,7 +68,7 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
     }
 
     @Override
-    public void onBindViewHolder(MyHolder holder, int position) {
+    public void onBindViewHolder(final MyHolder holder, final int position) {
         if (getItemViewType(position) == TYPE_HEADER) {
             return;
         }
@@ -96,6 +99,16 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
             holder.ivIcon.setImageResource(R.drawable.sq_icon);
         } else {
             holder.ivIcon.setVisibility(View.GONE);
+        }
+
+        //注册点击监听事件
+        if (mListener != null) {
+            holder.rl.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mListener.onItemClick(holder.itemView, position);
+                }
+            });
         }
     }
 

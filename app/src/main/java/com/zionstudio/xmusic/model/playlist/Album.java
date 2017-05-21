@@ -5,6 +5,7 @@ package com.zionstudio.xmusic.model.playlist;
  */
 
 public class Album {
+    private static final long seriaVersionUID = 1L;
     public int id;
     public String name;
     public String picUrl;

@@ -8,13 +8,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
 
@@ -67,6 +67,7 @@ public class PlayMusicService extends Service {
         super.onCreate();
         if (sPlayer == null) {
             sPlayer = new MediaPlayer();
+            //注册播放完成的监听器
             sPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
@@ -79,6 +80,35 @@ public class PlayMusicService extends Service {
                         intent.putExtra("type", "end");
                         sendBroadcast(intent);
                     }
+                }
+            });
+            //注册缓冲进度监听器
+            sPlayer.setOnBufferingUpdateListener(new MediaPlayer.OnBufferingUpdateListener() {
+                @Override
+                public void onBufferingUpdate(MediaPlayer mp, int percent) {
+                    //当播放网络歌曲时，歌曲加载过程中会回调这个方法
+                    Log.e(TAG, "进度: " + percent + "%");
+                }
+            });
+
+            //
+            sPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    Log.e(TAG, "on Prepared");
+                    mp.start();
+                    if (sCover != null) {
+                        sCover.recycle();
+                    }
+                    sCover = null;
+                    isPaused = false;
+//                    playingSong = song;
+//                    playingPath = path;
+                    loadCover();
+                    Intent intent = new Intent("com.zionstudio.xmusic.playstate");
+                    intent.putExtra("type", "start");
+                    sendBroadcast(intent);
+                    sendNotification();
                 }
             });
         }
@@ -98,27 +128,30 @@ public class PlayMusicService extends Service {
      * @param song 要播放的音乐
      */
     public void playMusic(Song song) {
-        String path = song.path;
+        String path = song.url;
+//        String url = "http://210.38.1.136:9999/m10.music.126.net/20170522001201/cd829a7942708ea85aa27e490b565b50/ymusic/f1ae/0bd1/31a9/5d64960d0cbebc0d089bc85a6ef54680.mp3";
         if (!sPlayer.isPlaying() || !path.equals(playingPath)) {
             sPlayer.reset();
             try {
+//                sPlayer.setDataSource(url);
                 sPlayer.setDataSource(path);
-                sPlayer.prepare();
+//                sPlayer.prepareAsync();
+                sPlayer.prepareAsync();
                 sPlayer.setLooping(false);
-                sPlayer.start();
+//                sPlayer.start();
                 //回收Bitmap
-                if (sCover != null) {
-                    sCover.recycle();
-                }
-                sCover = null;
-                isPaused = false;
+//                if (sCover != null) {
+//                    sCover.recycle();
+//                }
+//                sCover = null;
+//                isPaused = false;
                 playingSong = song;
                 playingPath = path;
-                loadCover();
-                Intent intent = new Intent("com.zionstudio.xmusic.playstate");
-                intent.putExtra("type", "start");
-                sendBroadcast(intent);
-                sendNotification();
+//                loadCover();
+//                Intent intent = new Intent("com.zionstudio.xmusic.playstate");
+//                intent.putExtra("type", "start");
+//                sendBroadcast(intent);
+//                sendNotification();
             } catch (IOException e) {
                 e.printStackTrace();
                 Intent intent = new Intent("com.zionstudio.xmusic.playstate");
@@ -334,6 +367,16 @@ public class PlayMusicService extends Service {
             sendNotification();
         } else {
             Utils.makeToast("上一首是不存在的");
+        }
+    }
+
+    public void playUrl(String url) {
+        sPlayer.reset();
+        try {
+            sPlayer.setDataSource(url);
+            sPlayer.prepare();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

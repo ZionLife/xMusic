@@ -1,5 +1,7 @@
 package com.zionstudio.xmusic.model;
 
+import com.zionstudio.xmusic.model.playlist.Album;
+
 import java.io.Serializable;
 
 /**
@@ -12,11 +14,15 @@ public class Song implements Serializable {
     public int id;
     public String title;
     public String display_name;
-    public String path;
+    public String url;
     public int duration;
     public String albums;
     public String artist;
     public String singer;
     public String coverPath;
     public long size;
+
+    //在线歌曲
+    public String name;
+    public Album al;
 }

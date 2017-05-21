@@ -144,9 +144,9 @@ public class Utils {
                 s = new Song();
                 s.duration = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
                 s.size = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.SIZE));
-                s.path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                s.url = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
                 //检查是否会小于1分钟或者小于1Mb，且过滤掉.flac文件（系统MediaPlayer对.flac支持不好，以后用开源库替换）
-                if ((s.duration / 60 <= 0) || (s.size < 1024 * 1024) || s.path.contains(".flac")) {
+                if ((s.duration / 60 <= 0) || (s.size < 1024 * 1024) || s.url.contains(".flac")) {
                     continue;
                 }
 
@@ -154,7 +154,7 @@ public class Utils {
                 s.title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
                 s.artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
                 s.albums = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
-                s.path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                s.url = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
                 s.type = Constants.TYPE_LOCAL;
                 mediaList.add(s);
             }

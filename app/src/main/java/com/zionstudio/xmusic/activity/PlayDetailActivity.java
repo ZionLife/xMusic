@@ -231,18 +231,6 @@ public class PlayDetailActivity extends BaseActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-////                Bitmap cover = BitmapUtils.getCover(mService.getPlayingSong());
-//                Bitmap cover = BitmapUtils.decodeSampleBitmapFromBytes(mCoverBytes, Utils.getScreenWidth(), Utils.getScreenHeight());
-//                Log.e(TAG, "背景压缩前的大小：" + BitmapUtils.getBitmapsize(cover));
-//                if (cover == null) {
-//                    cover = BitmapFactory.decodeResource(getResources(), R.drawable.cover);
-//                }
-////                Bitmap blurBitmap = StackBlur.blurNativelyPixels(cover, 170, false);
-//                Log.e(TAG, "背景压缩后的大小：" + BitmapUtils.getBitmapsize(cover));
-//                Bitmap blurBitmap = StackBlur.blur(cover, 170, false);
-//                final Drawable d = new BitmapDrawable(blurBitmap);
-//                d.setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
-//                cover.recycle();
                 final Drawable d = getBackgroundDrawable();
                 mHandler.post(new Runnable() {
                     @Override

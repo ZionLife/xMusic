@@ -7,7 +7,6 @@ import android.graphics.Matrix;
 import android.media.MediaMetadataRetriever;
 import android.os.Build;
 
-import com.zionstudio.xmusic.MyApplication;
 import com.zionstudio.xmusic.model.Song;
 
 import java.io.ByteArrayOutputStream;
@@ -50,7 +49,7 @@ public class BitmapUtils {
         Bitmap bitmap = null;
         if (s != null) {
             retriever = new MediaMetadataRetriever();
-            retriever.setDataSource(s.path);
+            retriever.setDataSource(s.url);
             byte[] cover = retriever.getEmbeddedPicture();
             if (cover != null) {
                 bitmap = BitmapFactory.decodeByteArray(cover, 0, cover.length);
@@ -68,7 +67,7 @@ public class BitmapUtils {
         byte[] bytes = null;
         if (s != null) {
             retriever = new MediaMetadataRetriever();
-            retriever.setDataSource(s.path);
+            retriever.setDataSource(s.url);
             bytes = retriever.getEmbeddedPicture();
             retriever.release();
         }

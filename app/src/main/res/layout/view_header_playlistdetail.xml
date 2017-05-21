@@ -1,8 +1,137 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="275dp"
-              android:background="@android:color/black"
-              android:orientation="vertical">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/rl_header_playlistdetail"
+                android:layout_width="match_parent"
+                android:layout_height="275dp"
+                android:background="@android:color/black"
+                android:orientation="vertical">
 
-</LinearLayout>
+    <!--<com.zionstudio.xmusic.view.BackgroundAnimationLinearLayout-->
+    <!--android:id="@+id/ll_bg_header_playlistdetail"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent" />-->
+
+    <!--下面四个按钮-->
+    <LinearLayout
+        android:id="@+id/ll_header_playlist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="8dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/yn"/>
+
+            <TextView
+                style="@style/PlaylistDetailTextView"
+                android:text="收藏"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/yl"/>
+
+            <TextView
+                style="@style/PlaylistDetailTextView"
+                android:text="评论"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ys"/>
+
+            <TextView
+                style="@style/PlaylistDetailTextView"
+                android:text="分享"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ym"/>
+
+            <TextView
+                style="@style/PlaylistDetailTextView"
+                android:text="下载"
+                />
+        </LinearLayout>
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/iv_cover_header_playlistdetail"
+        android:layout_width="130dp"
+        android:layout_height="130dp"
+        android:layout_above="@id/ll_header_playlist"
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="25dp"
+        android:src="@drawable/cover_square"/>
+
+    <TextView
+        android:id="@+id/tv_title_header_playlistdetail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/iv_cover_header_playlistdetail"
+        android:layout_marginLeft="20dp"
+        android:layout_toRightOf="@id/iv_cover_header_playlistdetail"
+        android:text="Z"
+        android:textColor="@color/white"
+        android:textSize="20dp"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_title_header_playlistdetail"
+        android:layout_marginLeft="20sp"
+        android:layout_marginTop="25dp"
+        android:layout_toRightOf="@id/iv_cover_header_playlistdetail"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:layout_width="15sp"
+            android:layout_height="15sp"
+            android:src="@drawable/cover_square"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:gravity="center"
+            android:text="ZionMus"
+            android:textColor="@color/white"
+            android:textSize="13sp"/>
+    </LinearLayout>
+</RelativeLayout>
