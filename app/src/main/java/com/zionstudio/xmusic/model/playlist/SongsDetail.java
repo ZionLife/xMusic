@@ -1,4 +1,4 @@
-package com.zionstudio.xmusic.model;
+package com.zionstudio.xmusic.model.playlist;
 
 import java.util.ArrayList;
 

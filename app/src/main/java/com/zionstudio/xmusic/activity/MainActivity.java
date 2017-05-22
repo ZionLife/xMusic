@@ -1,7 +1,5 @@
 package com.zionstudio.xmusic.activity;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -21,8 +19,6 @@ import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.adapter.MyFragmentPagerAdapter;
 import com.zionstudio.xmusic.fragment.DiscoverFragment;
 import com.zionstudio.xmusic.fragment.MusicFragment;
-import com.zionstudio.xmusic.model.Song;
-import com.zionstudio.xmusic.util.Utils;
 import com.zionstudio.xmusic.view.CircleTransform;
 import com.zionstudio.xmusic.view.ShadowTransform;
 

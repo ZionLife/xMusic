@@ -8,7 +8,7 @@ import android.os.Process;
 import android.util.Log;
 
 
-import com.zionstudio.xmusic.model.Song;
+import com.zionstudio.xmusic.model.playlist.Song;
 import com.zionstudio.xmusic.model.user.UserInfo;
 import com.zionstudio.xmusic.util.Utils;
 

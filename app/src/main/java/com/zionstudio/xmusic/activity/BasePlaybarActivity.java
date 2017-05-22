@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -17,10 +18,13 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 import com.zionstudio.xmusic.R;
-import com.zionstudio.xmusic.model.Song;
+import com.zionstudio.xmusic.model.playlist.Song;
 import com.zionstudio.xmusic.service.PlayMusicService;
 import com.zionstudio.xmusic.util.BitmapUtils;
+import com.zionstudio.xmusic.util.Constants;
 import com.zionstudio.xmusic.view.RoundProgress;
 
 import java.util.Timer;
@@ -66,6 +70,7 @@ public abstract class BasePlaybarActivity extends BaseActivity {
     private ServiceConnection mConn = null;
     private Bitmap mCover;
     private boolean mActivityIsInvisible = false;
+    private byte[] mCoverBytes;
 
     protected void initData() {
 
@@ -158,23 +163,18 @@ public abstract class BasePlaybarActivity extends BaseActivity {
                 mTvArtistPlaying.setVisibility(View.VISIBLE);
                 mTvArtistPlaying.setText(s.artist);
                 //获取专辑封面并设置到状态栏
-                final byte[] coverByteArray = BitmapUtils.getCoverByteArray(sService.getPlayingSong());
+                mCoverBytes = sService.getCoverBytes();
                 if (mCover != null) {
                     mCover.recycle();
                     mCover = null;
                 }
-
                 //由于加载专辑图片时，要根据view的长宽来进行压缩，当前代码是在onCreate生命周期中，view的测量可能没有完成，获取的长宽可能为0，
                 // 因此通过view.post(Runnable)的方式来处理，保证以下代码执行时，该View已经测量完成。
                 mIvCoverPlaying.post(new Runnable() {
                     @Override
                     public void run() {
-                        if (coverByteArray != null) {
-                            mCover = BitmapUtils.decodeSampleBitmapFromBytes(coverByteArray, mIvCoverPlaying.getWidth(), mIvCoverPlaying.getHeight());
-//                            Log.e(TAG, "Cover size1:" + BitmapUtils.getBitmapsize(mCover));
-//                            //进行对比，可以发现压缩前后大小是相差很大的。
-//                            Bitmap cover = BitmapFactory.decodeByteArray(coverByteArray, 0, coverByteArray.length);
-//                            Log.e(TAG, "Cover size2:" + BitmapUtils.getBitmapsize(cover));
+                        if (mCoverBytes != null) {
+                            mCover = BitmapUtils.decodeSampleBitmapFromBytes(mCoverBytes, mIvCoverPlaying.getWidth(), mIvCoverPlaying.getHeight());
                         }
                         if (mCover != null) {
                             mIvCoverPlaying.setImageBitmap(mCover);
@@ -229,7 +229,7 @@ public abstract class BasePlaybarActivity extends BaseActivity {
             String type = intent.getStringExtra("type");
             switch (type) {
                 case "start":
-                    BasePlaybarActivity.this.updatePlaybar();
+//                    BasePlaybarActivity.this.updatePlaybar();
                     mHandler.post(mRunnable);
                     mNeedUpdateProgress = true;
                     break;
@@ -249,6 +249,9 @@ public abstract class BasePlaybarActivity extends BaseActivity {
                     mTvArtistPlaying.setVisibility(View.GONE);
                     mIvCoverPlaying.setImageResource(R.drawable.default_cover);
                     mNeedUpdateProgress = false;
+                    break;
+                case "updatePlaybar":
+                    BasePlaybarActivity.this.updatePlaybar();
                     break;
             }
         }

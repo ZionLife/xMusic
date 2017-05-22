@@ -1,23 +1,19 @@
 package com.zionstudio.xmusic.adapter;
 
 import android.content.Context;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.zionstudio.xmusic.MyApplication;
 import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.listener.OnItemClickListener;
-import com.zionstudio.xmusic.model.Song;
+import com.zionstudio.xmusic.model.playlist.Song;
 import com.zionstudio.xmusic.model.playlist.Artist;
-import com.zionstudio.xmusic.model.playlist.PlaylistDetail;
 import com.zionstudio.xmusic.model.playlist.Privilege;
 import com.zionstudio.xmusic.model.playlist.Track;
 
@@ -84,6 +80,8 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
         holder.tvCount.setText("" + (pos + 1));
         holder.tvName.setText(track.name);
         holder.ivLocal.setVisibility(View.GONE);
+
+        //判断是否是本地歌曲，是的话就设置本地icon
         for (Song song : MyApplication.getMyApplication().mLocalSongs) {
             if (song.title.equals(track.name)) {
                 holder.ivLocal.setVisibility(View.VISIBLE);

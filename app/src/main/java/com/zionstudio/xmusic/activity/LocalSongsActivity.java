@@ -14,7 +14,7 @@ import android.widget.TextView;
 import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.adapter.LocalSongsAdapter;
 import com.zionstudio.xmusic.listener.OnItemClickListener;
-import com.zionstudio.xmusic.model.Song;
+import com.zionstudio.xmusic.model.playlist.Song;
 import com.zionstudio.xmusic.util.Utils;
 import com.zionstudio.xmusic.view.DividerDecoration;
 

@@ -12,7 +12,7 @@ import android.widget.Toast;
 import com.zionstudio.xmusic.activity.LoginActivity;
 import com.zionstudio.xmusic.activity.MainActivity;
 import com.zionstudio.xmusic.MyApplication;
-import com.zionstudio.xmusic.model.Song;
+import com.zionstudio.xmusic.model.playlist.Song;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -176,5 +176,32 @@ public class Utils {
      */
     public static int getScreenHeight() {
         return MyApplication.sContext.getResources().getDisplayMetrics().heightPixels;
+    }
+
+    /**
+     * 获取歌曲url
+     *
+     * @param id 歌曲id
+     * @return
+     */
+    public static String getSongUrl(int id) {
+        String url = null;
+        return url;
+//        RequestParams params = new RequestParams("id", String.valueOf(id));
+//        final Request request = CommonRequest.createGetRequest(UrlUtils.SONG_URL, params);
+//        DisposeDataListener listener = new DisposeDataListener() {
+//            @Override
+//            public void onSuccess(Object responseObj, String cookie) {
+//                //do something
+//                String result = (String) responseObj;
+//                Log.e(TAG, result);
+//            }
+//
+//            @Override
+//            public void onFailure(Object responseObj) {
+//                return;
+//            }
+//        };
+//        CommonOkHttpClient.get(request, new DisposeDataHandler(listener));
     }
 }

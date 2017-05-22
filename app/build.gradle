@@ -41,4 +41,9 @@ dependencies {
     compile 'org.greenrobot:eventbus:3.0.0'
     //高斯模糊依赖
     compile 'net.qiujuer.genius:blur:2.0.0-beta4'
+
+    //Glide
+    compile 'com.github.bumptech.glide:glide:4.0.0-RC0'
+    compile 'com.android.support:support-v4:25.3.1'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.0.0-RC0'
 }

@@ -25,10 +25,13 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 import com.zionstudio.xmusic.R;
-import com.zionstudio.xmusic.model.Song;
+import com.zionstudio.xmusic.model.playlist.Song;
 import com.zionstudio.xmusic.service.PlayMusicService;
 import com.zionstudio.xmusic.util.BitmapUtils;
+import com.zionstudio.xmusic.util.Constants;
 import com.zionstudio.xmusic.util.Utils;
 import com.zionstudio.xmusic.view.BackgroundAnimationLinearLayout;
 import com.zionstudio.xmusic.view.MyPlayerView;
@@ -161,12 +164,38 @@ public class PlayDetailActivity extends BaseActivity {
         if (mCover != null) {
             mCover.recycle();
         }
-        mCoverBytes = BitmapUtils.getCoverByteArray(mService.getPlayingSong());
+        Song playingSong = mService.getPlayingSong();
+        //如果是本地音乐则提取专辑图片
+        mCoverBytes = mService.getCoverBytes();
+//        if (playingSong.type == Constants.TYPE_LOCAL) {
+//            mCoverBytes = BitmapUtils.getCoverByteArray(mService.getPlayingSong());
+//        } else {
+//            //如果是在线音乐，则用Picasso加载
+//            Picasso.with(this)
+//                    .load(playingSong.al.picUrl)
+//                    .into(new Target() {
+//                        @Override
+//                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+//                            mCoverBytes = BitmapUtils.bitmap2Bytes(bitmap, Bitmap.CompressFormat.JPEG);
+//                        }
+//
+//                        @Override
+//                        public void onBitmapFailed(Drawable errorDrawable) {
+//
+//                        }
+//
+//                        @Override
+//                        public void onPrepareLoad(Drawable placeHolderDrawable) {
+//
+//                        }
+//                    });
+//        }
         if (mCoverBytes != null) {
             mCover = BitmapUtils.decodeSampleBitmapFromBytes(mCoverBytes, (int) ((2 / 3f) * mMpv.getCDSize()), (int) ((2 / 3f) * mMpv.getCDSize()));
         } else {
             mCover = null;
         }
+        //设置经过高斯模糊后的背景
         setBackgroundDrawable();
         //设置专辑封面
         mMpv.setCover(mCover);
@@ -476,6 +505,9 @@ public class PlayDetailActivity extends BaseActivity {
                 case "end":
                     //没有歌曲播放了
                     resetState();
+                    break;
+                case "updatePlaybar":
+                    updateState();
                     break;
             }
         }

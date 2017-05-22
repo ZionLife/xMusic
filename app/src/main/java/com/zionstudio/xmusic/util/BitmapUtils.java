@@ -4,10 +4,14 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
 import android.os.Build;
 
-import com.zionstudio.xmusic.model.Song;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
+import com.zionstudio.xmusic.MyApplication;
+import com.zionstudio.xmusic.model.playlist.Song;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -63,13 +67,15 @@ public class BitmapUtils {
      * 获取音乐专辑封面的byte数组，便于压缩
      */
     public static byte[] getCoverByteArray(Song s) {
-        MediaMetadataRetriever retriever;
         byte[] bytes = null;
-        if (s != null) {
-            retriever = new MediaMetadataRetriever();
-            retriever.setDataSource(s.url);
-            bytes = retriever.getEmbeddedPicture();
-            retriever.release();
+        if (s.type == Constants.TYPE_LOCAL) {
+            MediaMetadataRetriever retriever;
+            if (s != null) {
+                retriever = new MediaMetadataRetriever();
+                retriever.setDataSource(s.url);
+                bytes = retriever.getEmbeddedPicture();
+                retriever.release();
+            }
         }
         return bytes;
     }

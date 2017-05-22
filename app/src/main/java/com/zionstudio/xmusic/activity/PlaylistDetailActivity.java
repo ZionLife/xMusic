@@ -1,11 +1,16 @@
 package com.zionstudio.xmusic.activity;
 
+import android.app.Service;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -14,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.zionstudio.videoapp.okhttp.CommonOkHttpClient;
 import com.zionstudio.videoapp.okhttp.listener.DisposeDataHandler;
@@ -23,12 +29,16 @@ import com.zionstudio.videoapp.okhttp.request.RequestParams;
 import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.adapter.PlaylistDetailAdapter;
 import com.zionstudio.xmusic.listener.OnItemClickListener;
-import com.zionstudio.xmusic.model.Song;
-import com.zionstudio.xmusic.model.SongsDetail;
+import com.zionstudio.xmusic.model.playlist.Data;
+import com.zionstudio.xmusic.model.playlist.Song;
+import com.zionstudio.xmusic.model.playlist.SongsUrl;
+import com.zionstudio.xmusic.model.playlist.SongsDetail;
 import com.zionstudio.xmusic.model.playlist.Playlist;
 import com.zionstudio.xmusic.model.playlist.PlaylistDetail;
 import com.zionstudio.xmusic.model.playlist.Privilege;
 import com.zionstudio.xmusic.model.playlist.Track;
+import com.zionstudio.xmusic.service.PlayMusicService;
+import com.zionstudio.xmusic.util.Constants;
 import com.zionstudio.xmusic.util.UrlUtils;
 import com.zionstudio.xmusic.util.Utils;
 import com.zionstudio.xmusic.view.DividerDecoration;
@@ -67,6 +77,7 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
     private PlaylistDetailAdapter mAdapter;
     private List<Privilege> mPrivileges = new ArrayList<Privilege>();
     private List<Song> mSongs = new ArrayList<Song>();
+    private List<Data> mSongsUrl = new ArrayList<Data>();
     private SongsDetail mSongDetail;
     private int scrolledYSum = 0;
     private int headerHeight = 0;
@@ -74,10 +85,19 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
     private Drawable mToolbarBg;
     private Drawable mHeaderBg;
     private View mHeader;
+    private ServiceConnection mConnection;
+    private PlayMusicService mService;
+    private Song mPlayingSong;
 
     @Override
     protected int getLayoutResID() {
         return R.layout.activity_playlistdetail;
+    }
+
+    @Override
+    protected void initData() {
+        super.initData();
+        getPlaylistDetail();
     }
 
     @Override
@@ -87,8 +107,10 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
         mAdapter = new PlaylistDetailAdapter(this, mTracks, mPrivileges, new OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                TextView tv = (TextView) view.findViewById(R.id.tv_song_name);
-                Utils.makeToast("点击了歌曲:" + tv.getText().toString());
+                //由于RecyclerView中的第一项是header，因此数据的index应该是position - 1
+                Track track = mTracks.get(position - 1);
+                //获取歌曲详情
+                getSongDetail(track.id);
             }
 
             @Override
@@ -108,7 +130,7 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
                 super.onScrolled(recyclerView, dx, dy);
                 scrolledYSum += dy;
                 int delta = headerHeight - toolbarHeight;
-                Log.e(TAG, "Y轴滑动:" + scrolledYSum);
+//                Log.e(TAG, "Y轴滑动:" + scrolledYSum);
                 if (scrolledYSum >= 0 && scrolledYSum < delta) {
                     int alpha = (int) ((scrolledYSum / (float) delta) * 255);
                     mToolbarBg.setAlpha(alpha);
@@ -131,7 +153,7 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
                     mHeader.setBackground(mHeaderBg);
                     ImageView iv = (ImageView) mHeader.findViewById(R.id.iv_cover_header_playlistdetail);
                     iv.setImageBitmap(cover);
-                    //与mHeaderBg相同，但是为了避免更改mToolbarBg的透明度时影响到mHeaderBg,因此另外创建个。
+                    //与mHeaderBg相同，但是为了避免更改mToolbarBg的透明度时影响到mHeaderBg,因此另外创建个Drawable对象。
                     mToolbarBg = getBackgroundDrawable(cover, mHeader.getWidth(), mHeader.getHeight());
                     //记录header高度
                     headerHeight = mHeader.getHeight();
@@ -149,12 +171,43 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
 
     }
 
-    @Override
-    protected void initData() {
-        super.initData();
-        getPlaylistDetail();
+    /**
+     * 请求歌曲的url
+     */
+    private void getSongsUrl() {
+        HashMap<String, String> map = new HashMap<>();
+        StringBuilder ids = new StringBuilder();
+        for (Track track : mTracks) {
+            ids.append("," + track.id);
+        }
+        //删除第一个逗号
+        ids.delete(0, 1);
+        map.put("id", ids.toString());
+        RequestParams params = new RequestParams(map);
+        Request request = CommonRequest.createGetRequest(UrlUtils.SONG_URL, params);
+        DisposeDataListener listener = new DisposeDataListener() {
+            @Override
+            public void onSuccess(Object responseObj, String cookie) {
+                //do something
+                SongsUrl songsUrl = (SongsUrl) responseObj;
+                if (songsUrl.code == 200) {
+                    mSongsUrl = songsUrl.data;
+                    Utils.makeToast("获取歌曲url成功");
+                }
+            }
+
+            @Override
+            public void onFailure(Object responseObj) {
+                Log.e(TAG, "请求歌曲url失败");
+            }
+        };
+        CommonOkHttpClient.get(request, new DisposeDataHandler(listener, SongsUrl.class));
     }
 
+
+    /**
+     * 请求歌单详情
+     */
     private void getPlaylistDetail() {
         HashMap<String, String> map = new HashMap<String, String>();
         map.put("id", getIntent().getStringExtra("id"));
@@ -174,11 +227,8 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
                     mPrivileges.addAll(mPlaylistDetail.privileges);
                     mAdapter.notifyDataSetChanged();
                     Log.e(TAG, "设置数据成功");
-
-//                    //获取成功后，获取每个歌曲的详细信息（不包括歌曲url）
-//                    for (Track track : mTracks) {
-//                        getSongsDetail(track.id);
-//                    }
+                    //获取歌单歌曲的url
+//                    getSongsUrl();
                 }
             }
 
@@ -190,18 +240,23 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
         CommonOkHttpClient.get(request, new DisposeDataHandler(listener, PlaylistDetail.class));
     }
 
-    private void getSongsDetail(int id) {
+    /**
+     * 请求歌曲详情
+     *
+     * @param id 歌曲id
+     */
+    private void getSongDetail(int id) {
         HashMap<String, String> map = new HashMap<String, String>();
         map.put("ids", String.valueOf(id));
         RequestParams params = new RequestParams(map);
-        final Request request = CommonRequest.createGetRequest(UrlUtils.SONGS_DETAIL, params);
+        final Request request = CommonRequest.createGetRequest(UrlUtils.SONG_DETAIL, params);
         DisposeDataListener listener = new DisposeDataListener() {
             @Override
             public void onSuccess(Object responseObj, String cookie) {
                 SongsDetail songsDetail = (SongsDetail) responseObj;
                 if (songsDetail.code == 200) {
-                    mSongs.add(songsDetail.songs.get(0));
-                    Log.e(TAG, "请求歌曲详情成功");
+                    mPlayingSong = songsDetail.songs.get(0);
+                    getSongUrl(mPlayingSong.id);
                 }
             }
 
@@ -213,6 +268,40 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
         CommonOkHttpClient.get(request, new DisposeDataHandler(listener, SongsDetail.class));
     }
 
+    private void getSongUrl(int id) {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("id", String.valueOf(id));
+        RequestParams params = new RequestParams(map);
+        Request request = CommonRequest.createGetRequest(UrlUtils.SONG_URL, params);
+        DisposeDataListener listener = new DisposeDataListener() {
+            @Override
+            public void onSuccess(Object responseObj, String cookie) {
+                //do something
+                SongsUrl songsUrl = (SongsUrl) responseObj;
+                if (songsUrl.code == 200) {
+                    mPlayingSong.url = songsUrl.data.get(0).url;
+                    mPlayingSong.type = Constants.TYPE_ONLINE;
+                    sService.playMusic(mPlayingSong);
+                    Utils.makeToast("获取歌曲url成功");
+                }
+            }
+
+            @Override
+            public void onFailure(Object responseObj) {
+                Log.e(TAG, "请求歌曲url失败");
+            }
+        };
+        CommonOkHttpClient.get(request, new DisposeDataHandler(listener, SongsUrl.class));
+    }
+
+    /**
+     * 加载activity顶部的高斯模糊后的背景图片
+     *
+     * @param bitmap    源bitmap
+     * @param reqWidth  期望宽度
+     * @param reqHeight 期望高度
+     * @return 高斯模糊后的Drawable对象
+     */
     private Drawable getBackgroundDrawable(Bitmap bitmap, float reqWidth, float reqHeight) {
         final float aspectRatio = reqHeight / reqWidth;
         //图片高度无需变动，裁剪图片高，使高宽比与期望的一致即可
@@ -251,6 +340,7 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
 
     @OnClick({R.id.iv_back_playlistdetail})
     public void onClick(View view) {
+        super.onClick(view);
         switch (view.getId()) {
             case R.id.iv_back_playlistdetail:
                 PlaylistDetailActivity.this.finish();
