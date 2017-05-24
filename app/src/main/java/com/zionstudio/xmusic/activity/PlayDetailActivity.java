@@ -159,37 +159,13 @@ public class PlayDetailActivity extends BaseActivity {
      */
     private void updateState() {
         Song s = mService.getPlayingSong();
-        mTvTitlePlaydetail.setText(s.title);
+        mTvTitlePlaydetail.setText(s.name);
         mTvArtistPlaydetail.setText(s.artist);
         if (mCover != null) {
             mCover.recycle();
         }
         Song playingSong = mService.getPlayingSong();
-        //如果是本地音乐则提取专辑图片
         mCoverBytes = mService.getCoverBytes();
-//        if (playingSong.type == Constants.TYPE_LOCAL) {
-//            mCoverBytes = BitmapUtils.getCoverByteArray(mService.getPlayingSong());
-//        } else {
-//            //如果是在线音乐，则用Picasso加载
-//            Picasso.with(this)
-//                    .load(playingSong.al.picUrl)
-//                    .into(new Target() {
-//                        @Override
-//                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-//                            mCoverBytes = BitmapUtils.bitmap2Bytes(bitmap, Bitmap.CompressFormat.JPEG);
-//                        }
-//
-//                        @Override
-//                        public void onBitmapFailed(Drawable errorDrawable) {
-//
-//                        }
-//
-//                        @Override
-//                        public void onPrepareLoad(Drawable placeHolderDrawable) {
-//
-//                        }
-//                    });
-//        }
         if (mCoverBytes != null) {
             mCover = BitmapUtils.decodeSampleBitmapFromBytes(mCoverBytes, (int) ((2 / 3f) * mMpv.getCDSize()), (int) ((2 / 3f) * mMpv.getCDSize()));
         } else {

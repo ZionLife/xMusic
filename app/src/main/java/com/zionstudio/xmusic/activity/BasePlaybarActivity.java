@@ -159,7 +159,7 @@ public abstract class BasePlaybarActivity extends BaseActivity {
             if (sService.isPlaying() || sService.isPaused()) {
                 Song s = sService.getPlayingSong();
                 //给状态栏设置歌曲名和歌手
-                mTvTitlePlaying.setText(s.title);
+                mTvTitlePlaying.setText(s.name);
                 mTvArtistPlaying.setVisibility(View.VISIBLE);
                 mTvArtistPlaying.setText(s.artist);
                 //获取专辑封面并设置到状态栏

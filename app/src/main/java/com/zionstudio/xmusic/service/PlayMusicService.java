@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
@@ -22,17 +21,26 @@ import android.widget.RemoteViews;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
+import com.zionstudio.videoapp.okhttp.CommonOkHttpClient;
+import com.zionstudio.videoapp.okhttp.listener.DisposeDataHandler;
+import com.zionstudio.videoapp.okhttp.listener.DisposeDataListener;
+import com.zionstudio.videoapp.okhttp.request.CommonRequest;
+import com.zionstudio.videoapp.okhttp.request.RequestParams;
 import com.zionstudio.xmusic.MyApplication;
 import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.activity.PlayDetailActivity;
 import com.zionstudio.xmusic.model.playlist.Song;
+import com.zionstudio.xmusic.model.playlist.SongsDetail;
+import com.zionstudio.xmusic.model.playlist.SongsUrl;
 import com.zionstudio.xmusic.util.BitmapUtils;
 import com.zionstudio.xmusic.util.Constants;
+import com.zionstudio.xmusic.util.UrlUtils;
 import com.zionstudio.xmusic.util.Utils;
 
 import java.io.IOException;
+import java.util.HashMap;
+
+import okhttp3.Request;
 
 /**
  * Created by Administrator on 2017/4/30 0030.
@@ -46,12 +54,12 @@ public class PlayMusicService extends Service {
 
     private MyApplication mApplication = MyApplication.getMyApplication();
 
-    private static boolean isStop = true;
-    private static boolean isPaused = false;
+    private boolean isStop = true;
+    private boolean isPaused = false;
     private static final String TAG = "PlayMusicService";
     private static MediaPlayer sPlayer;
     private static String playingPath = "";
-    private Song playingSong;
+    private Song mPlayingSong;
     private final IBinder mBinder = new PlayMusicBinder();
     private static Bitmap sCover;
 
@@ -135,16 +143,21 @@ public class PlayMusicService extends Service {
      */
     public void playMusic(Song song) {
         String path = song.url;
-        if (!sPlayer.isPlaying() || !path.equals(playingPath)) {
+//        if (!sPlayer.isPlaying() || !path.equals(playingPath)) {
+        if (true) {
             sPlayer.reset();
             try {
-                sPlayer.setDataSource(path);
-                //异步进行prepare,减少主界面的卡顿
-                sPlayer.prepareAsync();
-                sPlayer.setLooping(false);
-
-                playingSong = song;
+                mPlayingSong = song;
                 playingPath = path;
+                sPlayer.setLooping(false);
+                if (song.type == Constants.TYPE_LOCAL) {
+                    sPlayer.setDataSource(path);
+                    //异步进行prepare,减少主界面的卡顿
+                    sPlayer.prepareAsync();
+                } else if (song.type == Constants.TYPE_ONLINE) {
+                    getSongDetail(mPlayingSong.id);
+                    getSongUrl(mPlayingSong.id);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
                 Intent intent = new Intent("com.zionstudio.xmusic.playstate");
@@ -154,22 +167,89 @@ public class PlayMusicService extends Service {
         }
     }
 
+    /**
+     * 请求歌曲详情
+     *
+     * @param id 歌曲id
+     */
+    private void getSongDetail(int id) {
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put("ids", String.valueOf(id));
+        RequestParams params = new RequestParams(map);
+        final Request request = CommonRequest.createGetRequest(UrlUtils.SONG_DETAIL, params);
+        DisposeDataListener listener = new DisposeDataListener() {
+            @Override
+            public void onSuccess(Object responseObj, String cookie) {
+                SongsDetail songsDetail = (SongsDetail) responseObj;
+                if (songsDetail.code == 200) {
+//                    mPlayingSong = songsDetail.songs.get(0);
+                    mPlayingSong.picUrl = songsDetail.songs.get(0).al.get(0).picUrl;
+                    loadCoverBytes();
+                }
+            }
+
+            @Override
+            public void onFailure(Object responseObj) {
+
+            }
+        };
+        CommonOkHttpClient.get(request, new DisposeDataHandler(listener, SongsDetail.class));
+    }
+
+    /**
+     * 获取单首歌曲的url
+     *
+     * @param id
+     */
+    private void getSongUrl(int id) {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("id", String.valueOf(id));
+        RequestParams params = new RequestParams(map);
+        Request request = CommonRequest.createGetRequest(UrlUtils.SONG_URL, params);
+        DisposeDataListener listener = new DisposeDataListener() {
+            @Override
+            public void onSuccess(Object responseObj, String cookie) {
+                //do something
+                SongsUrl songsUrl = (SongsUrl) responseObj;
+                if (songsUrl.code == 200) {
+                    mPlayingSong.url = songsUrl.data.get(0).url;
+                    try {
+                        sPlayer.setDataSource(mPlayingSong.url);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    sPlayer.prepareAsync();
+                }
+            }
+
+            @Override
+            public void onFailure(Object responseObj) {
+                Log.e(TAG, "请求歌曲url失败");
+            }
+        };
+        CommonOkHttpClient.get(request, new DisposeDataHandler(listener, SongsUrl.class));
+    }
+
+    /**
+     * 发送通知
+     */
     private void sendNotification() {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         RemoteViews views = new RemoteViews(getPackageName(), R.layout.view_notification);
         Bitmap bitmap;
         if (isPlaying() || isPaused()) {
             //加载封面图片
-            byte[] bytes = BitmapUtils.getCoverByteArray(playingSong);
+//            byte[] bytes = BitmapUtils.getCoverByteArray(mPlayingSong);
+            byte[] bytes = getCoverBytes();
             if (bytes != null) {
                 bitmap = BitmapUtils.decodeSampleBitmapFromBytes(bytes, Utils.dp2px(this, 68), Utils.dp2px(this, 68));
             } else {
                 bitmap = BitmapUtils.decodeSampleBitmapFromResource(getResources(), R.drawable.cover_square, Utils.dp2px(this, 68), Utils.dp2px(this, 68));
             }
             //设置歌曲名和演唱者
-            views.setTextViewText(R.id.tv_title_notification, playingSong.title);
+            views.setTextViewText(R.id.tv_title_notification, mPlayingSong.name);
             views.setViewVisibility(R.id.tv_artist_notification, View.VISIBLE);
-            views.setTextViewText(R.id.tv_artist_notification, playingSong.artist);
+            views.setTextViewText(R.id.tv_artist_notification, mPlayingSong.artist);
         } else {
             //当未播放时，重置通知栏样式
             bitmap = BitmapUtils.decodeSampleBitmapFromResource(getResources(), R.drawable.cover_square, Utils.dp2px(this, 68), Utils.dp2px(this, 68));
@@ -279,7 +359,7 @@ public class PlayMusicService extends Service {
      * 获取播放的歌曲
      */
     public Song getPlayingSong() {
-        return playingSong;
+        return mPlayingSong;
     }
 
     /**
@@ -296,14 +376,14 @@ public class PlayMusicService extends Service {
      * 加载正在播放的歌曲的封面的字节数组
      */
     private void loadCoverBytes() {
-//        Bitmap bitmap = BitmapUtils.getCover(playingSong);
+//        Bitmap bitmap = BitmapUtils.getCover(mPlayingSong);
         Log.e(TAG, "on load cover bytes");
-        if (playingSong == null) {
+        if (mPlayingSong == null) {
             return;
         }
-        if (playingSong.type == Constants.TYPE_LOCAL) {
+        if (mPlayingSong.type == Constants.TYPE_LOCAL) {
             Log.e(TAG, "on load local cover bytes");
-            mCoverBytes = BitmapUtils.getCoverByteArray(playingSong);
+            mCoverBytes = BitmapUtils.getCoverByteArray(mPlayingSong);
             Intent intent = new Intent("com.zionstudio.xmusic.playstate");
             intent.putExtra("type", "updatePlaybar");
             sendBroadcast(intent);
@@ -312,39 +392,17 @@ public class PlayMusicService extends Service {
             Log.e(TAG, "on load online cover bytes");
             Glide.with(this)
                     .asBitmap()
-                    .load(playingSong.al.picUrl)
+                    .load(mPlayingSong.al.get(0).picUrl)
                     .into(new SimpleTarget<Bitmap>() {
                         @Override
                         public void onResourceReady(Bitmap bitmap, Transition<? super Bitmap> transition) {
                             mCoverBytes = BitmapUtils.bitmap2Bytes(bitmap, Bitmap.CompressFormat.JPEG);
-                            Log.e(TAG, "on load online cover bytes succeed" + "url: " + playingSong.al.picUrl);
+                            Log.e(TAG, "on load online cover bytes succeed" + "url: " + mPlayingSong.al.get(0).picUrl);
                             Intent intent = new Intent("com.zionstudio.xmusic.playstate");
                             intent.putExtra("type", "updatePlaybar");
                             sendBroadcast(intent);
                         }
                     });
-//            Picasso.with(this)
-//                    .load(playingSong.al.picUrl)
-//                    .into(new Target() {
-//                        @Override
-//                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-//                            mCoverBytes = BitmapUtils.bitmap2Bytes(bitmap, Bitmap.CompressFormat.JPEG);
-//                            Log.e(TAG, "on load online cover bytes succeed" + "url: " + playingSong.al.picUrl);
-//                            Intent intent = new Intent("com.zionstudio.xmusic.playstate");
-//                            intent.putExtra("type", "updatePlaybar");
-//                            sendBroadcast(intent);
-//                        }
-//
-//                        @Override
-//                        public void onBitmapFailed(Drawable errorDrawable) {
-//                            Log.e(TAG, "on load online cover bytes failed" + "url: " + playingSong.al.picUrl);
-//                        }
-//
-//                        @Override
-//                        public void onPrepareLoad(Drawable placeHolderDrawable) {
-//                            Log.e(TAG, "on prepare load online cover bytes" + "url: " + playingSong.al.picUrl);
-//                        }
-//                    });
         }
     }
 
@@ -402,7 +460,7 @@ public class PlayMusicService extends Service {
      * 播放上一首歌，如果存在的话
      */
     public void playPrevSong() {
-        if (mApplication.mPlayingIndex > 0) {
+        if (mApplication.mPlayingIndex > 0 && mApplication.mPlayingIndex < mApplication.mPlayingList.size()) {
             //如果还存在上一首，则播放
             mApplication.mPlayingIndex--;
             this.playMusic(mApplication.mPlayingList.get(mApplication.mPlayingIndex));
@@ -427,12 +485,6 @@ public class PlayMusicService extends Service {
         super.onDestroy();
         //释放MediaPlayer
         sPlayer.release();
-
-//        //保存当前播放的歌曲的索引
-//        SharedPreferences sp = getSharedPreferences("PlyaingInfo", Context.MODE_PRIVATE);
-//        SharedPreferences.Editor editor = sp.edit();
-//        editor.putInt("PlayingIndex", mApplication.mPlayingIndex);
-//        editor.commit();
 
         unregisterReceiver(mReceiver);
         mApplication = null;

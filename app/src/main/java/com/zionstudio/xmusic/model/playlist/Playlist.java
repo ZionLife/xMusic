@@ -17,6 +17,6 @@ public class Playlist {
     public int trackCount;
 
     public Profile creator;
-    public ArrayList<Track> tracks;
+    public ArrayList<Song> tracks;
     public String picUrl;
 }

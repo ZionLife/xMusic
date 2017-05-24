@@ -15,7 +15,6 @@ import com.zionstudio.xmusic.listener.OnItemClickListener;
 import com.zionstudio.xmusic.model.playlist.Song;
 import com.zionstudio.xmusic.model.playlist.Artist;
 import com.zionstudio.xmusic.model.playlist.Privilege;
-import com.zionstudio.xmusic.model.playlist.Track;
 
 import java.util.List;
 
@@ -28,12 +27,12 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
     private static final int TYPE_NORMAL = 1;
 
     private Context mContext;
-    private List<Track> mData;
+    private List<Song> mData;
     private List<Privilege> mPrivileges;
     private View mHeaderView = null;
     private OnItemClickListener mListener = null;
 
-    public PlaylistDetailAdapter(Context context, List<Track> tracks, List<Privilege> privileges, OnItemClickListener l) {
+    public PlaylistDetailAdapter(Context context, List<Song> tracks, List<Privilege> privileges, OnItemClickListener l) {
         mContext = context;
         mData = tracks;
         mPrivileges = privileges;
@@ -70,24 +69,25 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<PlaylistDetailAd
         }
         final int pos = getRealPosition(holder);
 
-        Track track = mData.get(pos);
-        //演唱者
-        String arAndAl = "";
-        for (Artist artist : track.ar) {
-            arAndAl += artist.name + "/";
-        }
-        holder.tvAlbum.setText(arAndAl.substring(0, arAndAl.length() - 1) + "-" + track.al.get(0).name);
+        Song thisSong = mData.get(pos);
+//        //演唱者
+//        String arAndAl = "";
+//        for (Artist artist : thisSong.ar) {
+//            arAndAl += artist.name + "/";
+//        }
+//        holder.tvAlbum.setText(arAndAl.substring(0, arAndAl.length() - 1) + "-" + thisSong.al.get(0).name);
+        holder.tvAlbum.setText(thisSong.artist + " - " + thisSong.album);
         holder.tvCount.setText("" + (pos + 1));
-        holder.tvName.setText(track.name);
+        holder.tvName.setText(thisSong.name);
         holder.ivLocal.setVisibility(View.GONE);
 
         //判断是否是本地歌曲，是的话就设置本地icon
         for (Song song : MyApplication.getMyApplication().mLocalSongs) {
-            if (song.title.equals(track.name)) {
+            if (song.name.equals(thisSong.name)) {
                 holder.ivLocal.setVisibility(View.VISIBLE);
             }
         }
-        if (track.mv != 0) {
+        if (thisSong.mv != 0) {
             holder.ivMv.setVisibility(View.VISIBLE);
         } else {
             holder.ivMv.setVisibility(View.GONE);

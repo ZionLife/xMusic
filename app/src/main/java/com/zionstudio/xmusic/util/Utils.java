@@ -12,6 +12,8 @@ import android.widget.Toast;
 import com.zionstudio.xmusic.activity.LoginActivity;
 import com.zionstudio.xmusic.activity.MainActivity;
 import com.zionstudio.xmusic.MyApplication;
+import com.zionstudio.xmusic.model.playlist.Album;
+import com.zionstudio.xmusic.model.playlist.Artist;
 import com.zionstudio.xmusic.model.playlist.Song;
 
 import java.io.ByteArrayInputStream;
@@ -145,15 +147,32 @@ public class Utils {
                 s.duration = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
                 s.size = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.SIZE));
                 s.url = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-                //检查是否会小于1分钟或者小于1Mb，且过滤掉.flac文件（系统MediaPlayer对.flac支持不好，以后用开源库替换）
+                //检查是否会小于1分钟或者小于1Mb，且过滤掉.flac文件（系统MediaPlayer对.flac支持不好）
                 if ((s.duration / 60 <= 0) || (s.size < 1024 * 1024) || s.url.contains(".flac")) {
                     continue;
                 }
 
                 s.id = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
-                s.title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
+                s.name = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
+
+                //设置artist
+//                if (s.ar == null) {
+//                    s.ar = new ArrayList<Artist>();
+//                }
+//                Artist ar = new Artist();
+//                ar.name = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+//                s.ar.add(ar);
                 s.artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
-                s.albums = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
+
+                //设置album
+//                Album al = new Album();
+//                al.name = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
+//                if (s.al == null) {
+//                    s.al = new ArrayList<Album>();
+//                }
+//                s.al.add(al);
+                s.album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
+
                 s.url = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
                 s.type = Constants.TYPE_LOCAL;
                 mediaList.add(s);

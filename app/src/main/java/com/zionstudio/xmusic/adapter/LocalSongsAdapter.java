@@ -41,8 +41,8 @@ public class LocalSongsAdapter extends RecyclerView.Adapter<LocalSongsAdapter.Vi
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         Song s = mSongList.get(position);
-        holder.tvName.setText(s.title);
-        holder.tvAlbum.setText(s.artist + "-" + s.albums);
+        holder.tvName.setText(s.name);
+        holder.tvAlbum.setText(s.artist + " - " + s.album);
         if (mListener != null) {
             holder.rl.setOnClickListener(new View.OnClickListener() {
                 @Override

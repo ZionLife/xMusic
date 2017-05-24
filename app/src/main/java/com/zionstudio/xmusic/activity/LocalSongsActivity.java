@@ -70,7 +70,6 @@ public class LocalSongsActivity extends BasePlaybarActivity {
      * 请求外部存储读权限
      */
     private void requestReadExternalPermission() {
-        boolean result = true;
         String permission[] = {Manifest.permission.READ_EXTERNAL_STORAGE};
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             int i = checkSelfPermission(permission[0]);
@@ -116,20 +115,23 @@ public class LocalSongsActivity extends BasePlaybarActivity {
             @Override
             public void onItemClick(View view, int position) {
                 Song s = sApplication.mLocalSongs.get(position);
-                String path = s.url;
+//                String path = s.url;
                 if (sService != null) {
-                    if (!sService.getPlayingPath().equals(path)) {
+
+                    //如果当前播放列表和本地音乐不同，则将本地音乐添加到当前播放列表中
+                    if (sApplication.mPlayingList != null
+                            && (!sApplication.mPlayingList.containsAll(sApplication.mLocalSongs) || !sApplication.mLocalSongs.containsAll(sApplication.mPlayingList))) {
+                        sApplication.mPlayingList.clear();
+                        sApplication.mPlayingList.addAll(sApplication.mLocalSongs);
+                    }
+
+                    Song playingSong = sService.getPlayingSong();
+                    if (!sService.isPlaying() || (!playingSong.name.equals(s.name) && !playingSong.artist.equals(s.artist) && !playingSong.album.equals(s.album))) {
                         //开始播放音乐
                         sService.playMusic(s);
                     } else if (sService.isPaused()) {
                         sService.continueMusic();
                     }
-                }
-                //如果当前播放列表和本地音乐不同，则将本地音乐添加到当前播放列表中
-                if (sApplication.mPlayingList != null
-                        && (!sApplication.mPlayingList.containsAll(sApplication.mLocalSongs) || !sApplication.mLocalSongs.containsAll(sApplication.mPlayingList))) {
-                    sApplication.mPlayingList.clear();
-                    sApplication.mPlayingList.addAll(sApplication.mLocalSongs);
                 }
                 //记录下列表索引
                 sApplication.mPlayingIndex = position;

@@ -5,8 +5,8 @@ package com.zionstudio.xmusic.util;
  */
 
 public class UrlUtils {
-//            public static final String SERVER_HOST = "http://119.29.119.123:3000";
-    public static final String SERVER_HOST = "http://192.168.199.209:3000";
+    public static final String SERVER_HOST = "http://119.29.119.123:3000";
+//    public static final String SERVER_HOST = "http://192.168.199.209:3000";
 
     //登陆接口
     public static final String LOGIN = SERVER_HOST + "/login/cellphone";
