@@ -30,8 +30,8 @@ import com.zionstudio.xmusic.MyApplication;
 import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.activity.PlayDetailActivity;
 import com.zionstudio.xmusic.model.playlist.Song;
-import com.zionstudio.xmusic.model.playlist.SongsDetail;
-import com.zionstudio.xmusic.model.playlist.SongsUrl;
+import com.zionstudio.xmusic.model.playlist.SongsDetailJson;
+import com.zionstudio.xmusic.model.playlist.SongsUrlJson;
 import com.zionstudio.xmusic.util.BitmapUtils;
 import com.zionstudio.xmusic.util.Constants;
 import com.zionstudio.xmusic.util.UrlUtils;
@@ -155,7 +155,7 @@ public class PlayMusicService extends Service {
                     //异步进行prepare,减少主界面的卡顿
                     sPlayer.prepareAsync();
                 } else if (song.type == Constants.TYPE_ONLINE) {
-                    getSongDetail(mPlayingSong.id);
+//                    getSongDetail(mPlayingSong.id);
                     getSongUrl(mPlayingSong.id);
                 }
             } catch (IOException e) {
@@ -180,7 +180,7 @@ public class PlayMusicService extends Service {
         DisposeDataListener listener = new DisposeDataListener() {
             @Override
             public void onSuccess(Object responseObj, String cookie) {
-                SongsDetail songsDetail = (SongsDetail) responseObj;
+                SongsDetailJson songsDetail = (SongsDetailJson) responseObj;
                 if (songsDetail.code == 200) {
 //                    mPlayingSong = songsDetail.songs.get(0);
                     mPlayingSong.picUrl = songsDetail.songs.get(0).al.get(0).picUrl;
@@ -193,7 +193,7 @@ public class PlayMusicService extends Service {
 
             }
         };
-        CommonOkHttpClient.get(request, new DisposeDataHandler(listener, SongsDetail.class));
+        CommonOkHttpClient.get(request, new DisposeDataHandler(listener, SongsDetailJson.class));
     }
 
     /**
@@ -210,7 +210,7 @@ public class PlayMusicService extends Service {
             @Override
             public void onSuccess(Object responseObj, String cookie) {
                 //do something
-                SongsUrl songsUrl = (SongsUrl) responseObj;
+                SongsUrlJson songsUrl = (SongsUrlJson) responseObj;
                 if (songsUrl.code == 200) {
                     mPlayingSong.url = songsUrl.data.get(0).url;
                     try {
@@ -224,10 +224,11 @@ public class PlayMusicService extends Service {
 
             @Override
             public void onFailure(Object responseObj) {
-                Log.e(TAG, "请求歌曲url失败");
+//                Utils.makeToast("无法播放歌曲\"" + mPlayingSong.name + "\"");
+                playNextSong();
             }
         };
-        CommonOkHttpClient.get(request, new DisposeDataHandler(listener, SongsUrl.class));
+        CommonOkHttpClient.get(request, new DisposeDataHandler(listener, SongsUrlJson.class));
     }
 
     /**
@@ -376,20 +377,16 @@ public class PlayMusicService extends Service {
      * 加载正在播放的歌曲的封面的字节数组
      */
     private void loadCoverBytes() {
-//        Bitmap bitmap = BitmapUtils.getCover(mPlayingSong);
-        Log.e(TAG, "on load cover bytes");
         if (mPlayingSong == null) {
             return;
         }
         if (mPlayingSong.type == Constants.TYPE_LOCAL) {
-            Log.e(TAG, "on load local cover bytes");
             mCoverBytes = BitmapUtils.getCoverByteArray(mPlayingSong);
             Intent intent = new Intent("com.zionstudio.xmusic.playstate");
             intent.putExtra("type", "updatePlaybar");
             sendBroadcast(intent);
 
         } else {
-            Log.e(TAG, "on load online cover bytes");
             Glide.with(this)
                     .asBitmap()
                     .load(mPlayingSong.al.get(0).picUrl)
@@ -401,6 +398,7 @@ public class PlayMusicService extends Service {
                             Intent intent = new Intent("com.zionstudio.xmusic.playstate");
                             intent.putExtra("type", "updatePlaybar");
                             sendBroadcast(intent);
+                            sendNotification();
                         }
                     });
         }

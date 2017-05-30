@@ -4,11 +4,9 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.graphics.drawable.DrawableWrapper;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -33,7 +31,7 @@ import com.zionstudio.xmusic.activity.RecentlyPlayedActivity;
 import com.zionstudio.xmusic.adapter.MusicFgItemAdapter;
 import com.zionstudio.xmusic.adapter.MusicFgPlaylistAdapter;
 import com.zionstudio.xmusic.listener.OnItemClickListener;
-import com.zionstudio.xmusic.model.playlist.MyPlaylist;
+import com.zionstudio.xmusic.model.playlist.MyPlaylistJson;
 import com.zionstudio.xmusic.model.playlist.Playlist;
 import com.zionstudio.xmusic.util.UrlUtils;
 import com.zionstudio.xmusic.util.Utils;
@@ -83,8 +81,8 @@ public class MusicFragment extends Fragment {
         Log.e(TAG, "onCreateMusicFragmentView");
         View view = inflater.inflate(R.layout.fragment_music, container, false);
         unbinder = ButterKnife.bind(this, view);
-        initView();
         initData();
+        initView();
         return view;
     }
 
@@ -104,7 +102,7 @@ public class MusicFragment extends Fragment {
         DisposeDataListener listener = new DisposeDataListener() {
             @Override
             public void onSuccess(Object responseObj, String cookie) {
-                MyPlaylist list = (MyPlaylist) responseObj;
+                MyPlaylistJson list = (MyPlaylistJson) responseObj;
                 if (list.code.equals("200")) {
                     //更新歌单
                     mPlaylist.clear();
@@ -121,7 +119,7 @@ public class MusicFragment extends Fragment {
                 mSrlMusicfg.setRefreshing(false);
             }
         };
-        CommonOkHttpClient.get(request, new DisposeDataHandler(listener, MyPlaylist.class));
+        CommonOkHttpClient.get(request, new DisposeDataHandler(listener, MyPlaylistJson.class));
     }
 
     private void initView() {
@@ -153,7 +151,6 @@ public class MusicFragment extends Fragment {
         mPlaylistAdapter = new MusicFgPlaylistAdapter(MusicFragment.this.getContext(), mPlaylist, new OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                Utils.makeToast("点击了歌单的：" + position);
                 Intent intent = new Intent(MusicFragment.this.getContext(), PlaylistDetailActivity.class);
                 intent.putExtra("id", mPlaylist.get(position).id);
                 ImageView iv = (ImageView) view.findViewById(R.id.iv_cover);
@@ -166,7 +163,6 @@ public class MusicFragment extends Fragment {
 
             @Override
             public void onItemLongClick(View view, int position) {
-                Utils.makeToast("长按了歌单的：" + position);
             }
         });
 

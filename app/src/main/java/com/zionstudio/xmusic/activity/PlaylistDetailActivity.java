@@ -10,10 +10,10 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.zionstudio.videoapp.okhttp.CommonOkHttpClient;
@@ -27,13 +27,11 @@ import com.zionstudio.xmusic.listener.OnItemClickListener;
 import com.zionstudio.xmusic.model.playlist.Album;
 import com.zionstudio.xmusic.model.playlist.Artist;
 import com.zionstudio.xmusic.model.playlist.Data;
-import com.zionstudio.xmusic.model.playlist.Song;
-import com.zionstudio.xmusic.model.playlist.SongsUrl;
-import com.zionstudio.xmusic.model.playlist.SongsDetail;
 import com.zionstudio.xmusic.model.playlist.Playlist;
-import com.zionstudio.xmusic.model.playlist.PlaylistDetail;
+import com.zionstudio.xmusic.model.playlist.PlaylistDetailJson;
 import com.zionstudio.xmusic.model.playlist.Privilege;
-import com.zionstudio.xmusic.model.playlist.Track;
+import com.zionstudio.xmusic.model.playlist.Song;
+import com.zionstudio.xmusic.model.playlist.SongsDetailJson;
 import com.zionstudio.xmusic.service.PlayMusicService;
 import com.zionstudio.xmusic.util.Constants;
 import com.zionstudio.xmusic.util.UrlUtils;
@@ -67,15 +65,17 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
     ImageView mIvMenuPlaylistdetail;
     @BindView(R.id.tb_playlistdetail)
     Toolbar mTbPlaylistdetail;
+    @BindView(R.id.pb_playlistdetail)
+    ProgressBar mPbPlaylistdetail;
 
-    private PlaylistDetail mPlaylistDetail;
+    private PlaylistDetailJson mPlaylistDetail;
     private Playlist mPlaylist;
     //    private List<Track> mTracks = new ArrayList<Track>();
     private List<Song> mSongs = new ArrayList<Song>();
     private PlaylistDetailAdapter mAdapter;
     private List<Privilege> mPrivileges = new ArrayList<Privilege>();
     private List<Data> mSongsUrl = new ArrayList<Data>();
-    private SongsDetail mSongDetail;
+    private SongsDetailJson mSongDetail;
     private int scrolledYSum = 0;
     private int headerHeight = 0;
     private int toolbarHeight = 0;
@@ -105,14 +105,15 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
             @Override
             public void onItemClick(View view, int position) {
                 //由于RecyclerView中的第一项是header，因此数据的index应该是position - 1
-                if(sApplication.mPlayingList == null){
+                if (sApplication.mPlayingList == null) {
                     sApplication.mPlayingList = new ArrayList<>();
                 }
                 if (!sApplication.mPlayingList.containsAll(mSongs)) {
                     sApplication.mPlayingList.clear();
                     sApplication.mPlayingList.addAll(mSongs);
                 }
-                Song song = mSongs.get(position - 1);
+                sApplication.mPlayingIndex = position - 1;
+                Song song = mSongs.get(sApplication.mPlayingIndex);
                 sService.playMusic(song);
 
                 //获取歌曲详情
@@ -195,7 +196,7 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
 //            @Override
 //            public void onSuccess(Object responseObj, String cookie) {
 //                //do something
-//                SongsUrl songsUrl = (SongsUrl) responseObj;
+//                SongsUrlJson songsUrl = (SongsUrlJson) responseObj;
 //                if (songsUrl.code == 200) {
 //                    mSongsUrl = songsUrl.data;
 //                    Utils.makeToast("获取歌曲url成功");
@@ -207,7 +208,7 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
 //                Log.e(TAG, "请求歌曲url失败");
 //            }
 //        };
-//        CommonOkHttpClient.get(request, new DisposeDataHandler(listener, SongsUrl.class));
+//        CommonOkHttpClient.get(request, new DisposeDataHandler(listener, SongsUrlJson.class));
 //    }
 
 
@@ -215,6 +216,7 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
      * 请求歌单详情
      */
     private void getPlaylistDetail() {
+        mPbPlaylistdetail.setVisibility(View.VISIBLE);
         HashMap<String, String> map = new HashMap<String, String>();
         map.put("id", getIntent().getStringExtra("id"));
         RequestParams params = new RequestParams(map);
@@ -222,8 +224,8 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
         DisposeDataListener listener = new DisposeDataListener() {
             @Override
             public void onSuccess(Object responseObj, final String cookie) {
-                Utils.makeToast("请求歌单详情成功");
-                mPlaylistDetail = (PlaylistDetail) responseObj;
+                Utils.makeToast("请求歌单成功");
+                mPlaylistDetail = (PlaylistDetailJson) responseObj;
                 //如果请求成功
                 if (mPlaylistDetail.code == 200) {
                     mPlaylist = mPlaylistDetail.playlist;
@@ -234,19 +236,24 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
                     formatSongs();
                     mPrivileges.clear();
                     mPrivileges.addAll(mPlaylistDetail.privileges);
+
                     mAdapter.notifyDataSetChanged();
-                    Log.e(TAG, "设置数据成功");
+
                     //获取歌单歌曲的url
 //                    getSongsUrl();
+                } else {
+                    Utils.makeToast("服务器异常，请求歌单失败！");
                 }
+                mPbPlaylistdetail.setVisibility(View.GONE);
             }
 
             @Override
             public void onFailure(Object responseObj) {
-                Utils.makeToast("请求歌单详情失败");
+                Utils.makeToast("服务器异常，请求歌单失败！");
+                mPbPlaylistdetail.setVisibility(View.GONE);
             }
         };
-        CommonOkHttpClient.get(request, new DisposeDataHandler(listener, PlaylistDetail.class));
+        CommonOkHttpClient.get(request, new DisposeDataHandler(listener, PlaylistDetailJson.class));
     }
 
     /**
@@ -286,7 +293,7 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
 //        DisposeDataListener listener = new DisposeDataListener() {
 //            @Override
 //            public void onSuccess(Object responseObj, String cookie) {
-//                SongsDetail songsDetail = (SongsDetail) responseObj;
+//                SongsDetailJson songsDetail = (SongsDetailJson) responseObj;
 //                if (songsDetail.code == 200) {
 ////                    mPlayingSong = songsDetail.songs.get(0);
 //                    getSongUrl(mPlayingSong.id);
@@ -298,7 +305,7 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
 //
 //            }
 //        };
-//        CommonOkHttpClient.get(request, new DisposeDataHandler(listener, SongsDetail.class));
+//        CommonOkHttpClient.get(request, new DisposeDataHandler(listener, SongsDetailJson.class));
 //    }
 
     /**
@@ -315,7 +322,7 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
 //            @Override
 //            public void onSuccess(Object responseObj, String cookie) {
 //                //do something
-//                SongsUrl songsUrl = (SongsUrl) responseObj;
+//                SongsUrlJson songsUrl = (SongsUrlJson) responseObj;
 //                if (songsUrl.code == 200) {
 //                    mPlayingSong.url = songsUrl.data.get(0).url;
 //                    mPlayingSong.type = Constants.TYPE_ONLINE;
@@ -329,7 +336,7 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
 //                Log.e(TAG, "请求歌曲url失败");
 //            }
 //        };
-//        CommonOkHttpClient.get(request, new DisposeDataHandler(listener, SongsUrl.class));
+//        CommonOkHttpClient.get(request, new DisposeDataHandler(listener, SongsUrlJson.class));
 //    }
 
     /**

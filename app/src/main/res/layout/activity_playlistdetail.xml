@@ -59,6 +59,16 @@
         </RelativeLayout>
     </android.support.v7.widget.Toolbar>
 
+    <ProgressBar
+        android:id="@+id/pb_playlistdetail"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="285dp"
+        android:indeterminateTint="@color/colorPrimary"
+        android:visibility="gone"
+        />
+
     <include
         layout="@layout/view_playingbar"
         android:layout_width="match_parent"
