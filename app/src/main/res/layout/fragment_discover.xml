@@ -27,13 +27,13 @@
             android:layout_centerHorizontal="true"/>
     </RelativeLayout>
 
-    <!--<android.support.v7.widget.RecyclerView-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="match_parent"/>-->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingBottom="15dp"
+        android:paddingTop="15dp">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -54,8 +54,10 @@
                 android:id="@+id/textView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
                 android:gravity="center"
                 android:text="私人FM"
+                android:textColor="@color/black"
                 android:textSize="12sp"/>
         </LinearLayout>
 
@@ -75,8 +77,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
                 android:gravity="center"
                 android:text="每日歌曲推荐"
+                android:textColor="@color/black"
                 android:textSize="12sp"/>
         </LinearLayout>
 
@@ -96,9 +100,19 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
                 android:gravity="center"
                 android:text="云音乐热歌榜"
+                android:textColor="@color/black"
                 android:textSize="12sp"/>
         </LinearLayout>
     </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/colorItemDivider"/>
+
+    <include
+        layout="@layout/layout_list_discoverfg"/>
 </LinearLayout>
