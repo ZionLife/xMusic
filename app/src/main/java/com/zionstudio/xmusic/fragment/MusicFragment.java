@@ -101,7 +101,7 @@ public class MusicFragment extends Fragment {
         Request request = CommonRequest.createGetRequest(UrlUtils.PLAYLIST, params);
         DisposeDataListener listener = new DisposeDataListener() {
             @Override
-            public void onSuccess(Object responseObj, String cookie) {
+            public void onSuccess(Object responseObj) {
                 MyPlaylistJson list = (MyPlaylistJson) responseObj;
                 if (list.code.equals("200")) {
                     //更新歌单

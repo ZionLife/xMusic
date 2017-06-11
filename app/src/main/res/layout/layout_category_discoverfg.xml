@@ -1,31 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical">
-
-    <!--<TextView-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:text="Discover"/>-->
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="150dp">
-
-        <android.support.v4.view.ViewPager
-            android:id="@+id/vp_discover_fg"
-            android:layout_width="match_parent"
-            android:layout_height="150dp"/>
-
-        <net.lucode.hackware.magicindicator.MagicIndicator
-            android:id="@+id/indicator_discover_fg"
-            android:layout_width="wrap_content"
-            android:layout_height="25dp"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"/>
-    </RelativeLayout>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -36,6 +14,7 @@
         android:paddingTop="15dp">
 
         <LinearLayout
+            android:id="@+id/ll_personalfm"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -44,14 +23,14 @@
             android:orientation="vertical">
 
             <ImageView
-                android:id="@+id/imageView2"
+                android:id="@+id/iv_personalfm"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:clickable="true"
                 android:src="@drawable/t_recommend_icn_runfm_selector"/>
 
             <TextView
-                android:id="@+id/textView"
+                android:id="@+id/tv_personalfm"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
@@ -62,6 +41,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/ll_recommend"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -70,11 +50,13 @@
             android:orientation="vertical">
 
             <ImageView
+                android:id="@+id/iv_recommend"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/t_recommend_icn_playlist_selector"/>
 
             <TextView
+                android:id="@+id/tv_recommend"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
@@ -85,6 +67,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/ll_toplist"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -93,11 +76,13 @@
             android:orientation="vertical">
 
             <ImageView
+                android:id="@+id/iv_toplist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/t_recommend_icn_rank_selector"/>
 
             <TextView
+                android:id="@+id/tv_toplist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
@@ -112,7 +97,4 @@
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
         android:background="@color/colorItemDivider"/>
-
-    <include
-        layout="@layout/layout_list_discoveryfg"/>
 </LinearLayout>

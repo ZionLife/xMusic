@@ -179,7 +179,7 @@ public class PlayMusicService extends Service {
         final Request request = CommonRequest.createGetRequest(UrlUtils.SONG_DETAIL, params);
         DisposeDataListener listener = new DisposeDataListener() {
             @Override
-            public void onSuccess(Object responseObj, String cookie) {
+            public void onSuccess(Object responseObj) {
                 SongsDetailJson songsDetail = (SongsDetailJson) responseObj;
                 if (songsDetail.code == 200) {
 //                    mPlayingSong = songsDetail.songs.get(0);
@@ -208,7 +208,7 @@ public class PlayMusicService extends Service {
         Request request = CommonRequest.createGetRequest(UrlUtils.SONG_URL, params);
         DisposeDataListener listener = new DisposeDataListener() {
             @Override
-            public void onSuccess(Object responseObj, String cookie) {
+            public void onSuccess(Object responseObj) {
                 //do something
                 SongsUrlJson songsUrl = (SongsUrlJson) responseObj;
                 if (songsUrl.code == 200) {

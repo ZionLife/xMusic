@@ -66,7 +66,6 @@ public class DividerDecoration extends RecyclerView.ItemDecoration {
                 left = (int) llLocalSongs.getX();
                 break;
             case Utils.PLAYLISTDETAIL_ACTIVITY_DIVIDER_TYPE:
-//                left = Utils.dp2px(mContext,mContext.getResources().getDimension(R.dimen.songLeftIconWidth));
                 left = (int) mContext.getResources().getDimension(R.dimen.songLeftIconWidth);
                 break;
         }

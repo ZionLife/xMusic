@@ -223,7 +223,7 @@ public class PlaylistDetailActivity extends BasePlaybarActivity {
         Request request = CommonRequest.createGetRequest(UrlUtils.PLAYLIST_DETAIL, params);
         DisposeDataListener listener = new DisposeDataListener() {
             @Override
-            public void onSuccess(Object responseObj, final String cookie) {
+            public void onSuccess(Object responseObj) {
                 Utils.makeToast("请求歌单成功");
                 mPlaylistDetail = (PlaylistDetailJson) responseObj;
                 //如果请求成功

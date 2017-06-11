@@ -8,6 +8,7 @@ import android.os.Process;
 import android.util.Log;
 
 
+import com.zionstudio.videoapp.okhttp.CommonOkHttpClient;
 import com.zionstudio.xmusic.model.playlist.Song;
 import com.zionstudio.xmusic.model.user.UserInfo;
 import com.zionstudio.xmusic.util.Utils;
@@ -67,6 +68,8 @@ public class MyApplication extends Application {
         } else {
             mLocalSongs = new ArrayList<Song>();
         }
+        //初始化OkHttpClient
+        CommonOkHttpClient.initOkHttpClient(this);
     }
 
     /**

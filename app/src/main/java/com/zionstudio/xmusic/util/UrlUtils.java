@@ -5,7 +5,7 @@ package com.zionstudio.xmusic.util;
  */
 
 public class UrlUtils {
-    //    public static final String SERVER_HOST = "http://119.29.119.123:3000";
+//            public static final String SERVER_HOST = "http://119.29.119.123:3000";
     public static final String SERVER_HOST = "http://192.168.199.209:3000";
 
     //登陆接口
@@ -20,4 +20,6 @@ public class UrlUtils {
     public static final String SONG_URL = SERVER_HOST + "/music/url";
     //获取banner
     public static final String BANNER = SERVER_HOST + "/banner";
+    //获取推荐的歌单
+    public static final String RECOMMEND_RESOURCE = SERVER_HOST + "/personalized";
 }

@@ -18,6 +18,7 @@ import com.squareup.picasso.Picasso;
 import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.adapter.MyFragmentPagerAdapter;
 import com.zionstudio.xmusic.fragment.DiscoverFragment;
+import com.zionstudio.xmusic.fragment.DiscoverFragmentTest;
 import com.zionstudio.xmusic.fragment.MusicFragment;
 import com.zionstudio.xmusic.view.CircleTransform;
 import com.zionstudio.xmusic.view.ShadowTransform;
@@ -85,8 +86,13 @@ public class MainActivity extends BasePlaybarActivity {
         //初始化Fragment和ViewPager
         MusicFragment musicFragment = new MusicFragment();
         DiscoverFragment discoverFragment = new DiscoverFragment();
+
+        DiscoverFragmentTest discoverFragmentTest = new DiscoverFragmentTest();
+
         sFragmentList.add(musicFragment);
-        sFragmentList.add(discoverFragment);
+//        sFragmentList.add(discoverFragment);
+        sFragmentList.add(discoverFragmentTest);
+
         sFM = getSupportFragmentManager();
         MyFragmentPagerAdapter adapter = new MyFragmentPagerAdapter(sFM, sFragmentList);
         mVpContent.setAdapter(adapter);
@@ -142,6 +148,7 @@ public class MainActivity extends BasePlaybarActivity {
             Picasso.with(this).load(sApplication.mUserInfo.profile.avatarUrl)
                     .transform(new CircleTransform())
                     .into(mSdvAvatar);
+
         } catch (Exception e) {
             e.printStackTrace();
         }

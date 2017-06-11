@@ -9,7 +9,7 @@ import java.util.ArrayList;
  */
 
 public class Playlist {
-    public String playCount;
+    public long playCount;
     public String coverImgId;
     public String coverImgUrl;
     public String name;
