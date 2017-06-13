@@ -3,6 +3,7 @@ package com.zionstudio.xmusic.adapter;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,12 +52,16 @@ public class RecommendPlaylistAdapter extends RecyclerView.Adapter<RecommendPlay
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         Playlist playlist = mData.get(position);
-        Glide.with(mContext)
-                .load(playlist.picUrl)
-                .into(holder.iv);
-        Glide.with(mContext)
-                .load(playlist.picUrl)
-                .into(holder.iv);
+
+        if (!TextUtils.isEmpty(playlist.picUrl)) {
+            Glide.with(mContext)
+                    .load(playlist.picUrl)
+                    .into(holder.iv);
+        } else if (!TextUtils.isEmpty(playlist.coverImgUrl)) {
+            Glide.with(mContext)
+                    .load(playlist.coverImgUrl)
+                    .into(holder.iv);
+        }
 
         holder.tvName.setText(playlist.name);
         if ((playlist.playCount / 10000) > 0) {

@@ -22,4 +22,6 @@ public class UrlUtils {
     public static final String BANNER = SERVER_HOST + "/banner";
     //获取推荐的歌单
     public static final String RECOMMEND_RESOURCE = SERVER_HOST + "/personalized";
+    //获取精选碟
+    public static final String SELECTED_PLAYLIST = SERVER_HOST + "/top/playlist?limit=9&order=hot";
 }

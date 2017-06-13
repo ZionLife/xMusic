@@ -40,18 +40,22 @@ public class DiscoverFgRvAdapter extends RecyclerView.Adapter {
     private final String TAG = "DiscoverFgRvAdapter";
     private Context mContext;
 
-    int count = 3;
+    int count = 5;
 
     private int BANNER_TYPE = 0;
     private int CATEGORY_TYPE = 1;
     private int RECOMMEND_PLAYLIST_TYPE = 2;
+    private int SELECTED_PLAYLIST_TYPE = 3;
+    private int BOTTOMLINE_TYPE = -1;
+
     private LayoutInflater mInflater;
 
     private List<Banner> mBanners;
     private List<Playlist> mRecommendPlaylists;
-    private RecommendPlaylistAdapter mRecommendPlaylistAdapter;
+    private List<Playlist> mSelectedPlaylists;
+    private RecommendPlaylistAdapter mPlaylistAdapter;
     private BannersAdapter mBannersAdapter;
-    private  static Runnable sRunnable = null;
+    private static Runnable sRunnable = null;
     private static Handler sHandler = null;
 
     public DiscoverFgRvAdapter(Context context) {
@@ -59,6 +63,7 @@ public class DiscoverFgRvAdapter extends RecyclerView.Adapter {
         mInflater = LayoutInflater.from(context);
         mBanners = new ArrayList<>();
         mRecommendPlaylists = new ArrayList<>();
+        mSelectedPlaylists = new ArrayList<>();
     }
 
     @Override
@@ -76,12 +81,18 @@ public class DiscoverFgRvAdapter extends RecyclerView.Adapter {
             params.setFullSpan(true);
             viewCategory.setLayoutParams(params);
             return new CategoryHolder(viewCategory);
-        } else if (viewType == RECOMMEND_PLAYLIST_TYPE) {
-            View viewPlaylist = mInflater.inflate(R.layout.layout_recommend_playlist_discoverfg, parent, false);
+        } else if (viewType == RECOMMEND_PLAYLIST_TYPE || viewType == SELECTED_PLAYLIST_TYPE) {
+            View viewPlaylist = mInflater.inflate(R.layout.layout_playlist_discoverfg, parent, false);
             StaggeredGridLayoutManager.LayoutParams params = (StaggeredGridLayoutManager.LayoutParams) viewPlaylist.getLayoutParams();
             params.setFullSpan(true);
             viewPlaylist.setLayoutParams(params);
-            return new RecommendPlaylistHolder(viewPlaylist);
+            return new PlaylistHolder(viewPlaylist);
+        } else if (viewType == BOTTOMLINE_TYPE) {
+            View viewBottomLine = mInflater.inflate(R.layout.layout_bottomline, parent, false);
+            StaggeredGridLayoutManager.LayoutParams params = (StaggeredGridLayoutManager.LayoutParams) viewBottomLine.getLayoutParams();
+            params.setFullSpan(true);
+            viewBottomLine.setLayoutParams(params);
+            return new BottomLineHolder(viewBottomLine);
         }
         return null;
     }
@@ -94,18 +105,30 @@ public class DiscoverFgRvAdapter extends RecyclerView.Adapter {
             initBanner((BannerHolder) holder);
         } else if (holder instanceof CategoryHolder) {
             //待添加监听事件
-        } else if (holder instanceof RecommendPlaylistHolder && mRecommendPlaylists.size() != 0) {
-            initRecommendPlaylist((RecommendPlaylistHolder) holder);
+        } else if (holder instanceof PlaylistHolder && getItemViewType(position) == RECOMMEND_PLAYLIST_TYPE && mRecommendPlaylists.size() != 0) {
+            ((PlaylistHolder) holder).tvPlaylistTitle.setText("推荐歌单");
+            initPlaylist((PlaylistHolder) holder, mRecommendPlaylists);
+        } else if (holder instanceof PlaylistHolder && getItemViewType(position) == SELECTED_PLAYLIST_TYPE && mSelectedPlaylists.size() != 0) {
+            ((PlaylistHolder) holder).tvPlaylistTitle.setText("热门精选");
+            initPlaylist((PlaylistHolder) holder, mSelectedPlaylists);
+        } else if (holder instanceof BottomLineHolder) {
+            ((BottomLineHolder) holder).tvHint.setText("我是有底线的");
         }
     }
 
-    private void initRecommendPlaylist(RecommendPlaylistHolder holder) {
-        holder.rvRecommendPlaylist.setLayoutManager(new GridLayoutManager(mContext, 3));
-        mRecommendPlaylistAdapter = new RecommendPlaylistAdapter(mContext, mRecommendPlaylists, new OnItemClickListener() {
+    /**
+     * 初始化歌单RecyclerView
+     *
+     * @param holder
+     * @param datas
+     */
+    private void initPlaylist(PlaylistHolder holder, final List<Playlist> datas) {
+        holder.rvPlaylist.setLayoutManager(new GridLayoutManager(mContext, 3));
+        mPlaylistAdapter = new RecommendPlaylistAdapter(mContext, datas, new OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
                 Intent intent = new Intent(mContext, PlaylistDetailActivity.class);
-                intent.putExtra("id", mRecommendPlaylists.get(position).id);
+                intent.putExtra("id", datas.get(position).id);
                 ImageView iv = (ImageView) view.findViewById(R.id.iv_bg);
                 iv.setDrawingCacheEnabled(true);
                 Bitmap cover = iv.getDrawingCache();
@@ -119,10 +142,15 @@ public class DiscoverFgRvAdapter extends RecyclerView.Adapter {
 
             }
         });
-        holder.rvRecommendPlaylist.addItemDecoration(new DividerGridItemDecoration(mContext));
-        holder.rvRecommendPlaylist.setAdapter(mRecommendPlaylistAdapter);
+        holder.rvPlaylist.addItemDecoration(new DividerGridItemDecoration(mContext));
+        holder.rvPlaylist.setAdapter(mPlaylistAdapter);
     }
 
+    /**
+     * 初始化Banner
+     *
+     * @param holder
+     */
     private void initBanner(final BannerHolder holder) {
         Log.e(TAG, "initBanner！");
         mBannersAdapter = new BannersAdapter(mContext, mBanners);
@@ -134,17 +162,19 @@ public class DiscoverFgRvAdapter extends RecyclerView.Adapter {
         circleNavigator.setFollowTouch(false);
         holder.indicator.setNavigator(circleNavigator);
         ViewPagerHelper.bind(holder.indicator, holder.vp);
-        sHandler = new Handler();
-        sRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (mBanners.size() != 0) {
-                    holder.vp.setCurrentItem((holder.vp.getCurrentItem() + 1) % mBanners.size());
+        if (sHandler == null) {
+            sHandler = new Handler();
+            sRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (mBanners.size() != 0) {
+                        holder.vp.setCurrentItem((holder.vp.getCurrentItem() + 1) % mBanners.size());
+                    }
+                    sHandler.postDelayed(sRunnable, 5000);
                 }
-                sHandler.postDelayed(sRunnable, 5000);
-            }
-        };
-        sHandler.postDelayed(sRunnable, 5000);
+            };
+            sHandler.postDelayed(sRunnable, 5000);
+        }
     }
 
     @Override
@@ -154,6 +184,7 @@ public class DiscoverFgRvAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemViewType(int position) {
+
         switch (position) {
             case 0:
                 return BANNER_TYPE;
@@ -161,11 +192,20 @@ public class DiscoverFgRvAdapter extends RecyclerView.Adapter {
                 return CATEGORY_TYPE;
             case 2:
                 return RECOMMEND_PLAYLIST_TYPE;
+            case 3:
+                return SELECTED_PLAYLIST_TYPE;
+            case 4:
+                return BOTTOMLINE_TYPE;
 
         }
         return super.getItemViewType(position);
     }
 
+    /**
+     * 由DiscoverFragment获取到Banners数据之后设置进来
+     *
+     * @param datas
+     */
     public void setBannersData(List<Banner> datas) {
         Log.e(TAG, "setBannersData！");
         mBanners.clear();
@@ -174,11 +214,27 @@ public class DiscoverFgRvAdapter extends RecyclerView.Adapter {
 //        mBannersAdapter.notifyDataSetChanged();
     }
 
+    /**
+     * 设置个人推荐歌单数据
+     *
+     * @param datas
+     */
     public void setRecommendPlaylists(List<Playlist> datas) {
         mRecommendPlaylists.clear();
         mRecommendPlaylists.addAll(datas);
         notifyDataSetChanged();
-//        mRecommendPlaylistAdapter.notifyDataSetChanged();
+//        mPlaylistAdapter.notifyDataSetChanged();
+    }
+
+    /**
+     * 设置网友精选歌单数据
+     *
+     * @param datas
+     */
+    public void setSelectedPlaylists(List<Playlist> datas) {
+        mSelectedPlaylists.clear();
+        mSelectedPlaylists.addAll(datas);
+        notifyDataSetChanged();
     }
 
     //顶部Banner的ViewHolder
@@ -208,14 +264,23 @@ public class DiscoverFgRvAdapter extends RecyclerView.Adapter {
         }
     }
 
-    class RecommendPlaylistHolder extends RecyclerView.ViewHolder {
-        RecyclerView rvRecommendPlaylist;
-        TextView tvRecommendPlaylistTitle;
+    class PlaylistHolder extends RecyclerView.ViewHolder {
+        RecyclerView rvPlaylist;
+        TextView tvPlaylistTitle;
 
-        public RecommendPlaylistHolder(View itemView) {
+        public PlaylistHolder(View itemView) {
             super(itemView);
-            rvRecommendPlaylist = (RecyclerView) itemView.findViewById(R.id.rv_recommend_playlist);
-            tvRecommendPlaylistTitle = (TextView) itemView.findViewById(R.id.tv_recommend_playlist_title);
+            rvPlaylist = (RecyclerView) itemView.findViewById(R.id.rv_recommend_playlist);
+            tvPlaylistTitle = (TextView) itemView.findViewById(R.id.tv_recommend_playlist_title);
+        }
+    }
+
+    class BottomLineHolder extends RecyclerView.ViewHolder {
+        TextView tvHint;
+
+        public BottomLineHolder(View itemView) {
+            super(itemView);
+            tvHint = (TextView) itemView.findViewById(R.id.tv_hint);
         }
     }
 }

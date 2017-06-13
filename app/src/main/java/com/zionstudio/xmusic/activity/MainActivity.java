@@ -18,7 +18,6 @@ import com.squareup.picasso.Picasso;
 import com.zionstudio.xmusic.R;
 import com.zionstudio.xmusic.adapter.MyFragmentPagerAdapter;
 import com.zionstudio.xmusic.fragment.DiscoverFragment;
-import com.zionstudio.xmusic.fragment.DiscoverFragmentTest;
 import com.zionstudio.xmusic.fragment.MusicFragment;
 import com.zionstudio.xmusic.view.CircleTransform;
 import com.zionstudio.xmusic.view.ShadowTransform;
@@ -87,7 +86,7 @@ public class MainActivity extends BasePlaybarActivity {
         MusicFragment musicFragment = new MusicFragment();
         DiscoverFragment discoverFragment = new DiscoverFragment();
 
-        DiscoverFragmentTest discoverFragmentTest = new DiscoverFragmentTest();
+        DiscoverFragment discoverFragmentTest = new DiscoverFragment();
 
         sFragmentList.add(musicFragment);
 //        sFragmentList.add(discoverFragment);
