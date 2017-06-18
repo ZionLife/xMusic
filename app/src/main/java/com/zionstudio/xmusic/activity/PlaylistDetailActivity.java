@@ -53,7 +53,7 @@ import okhttp3.Request;
  * Created by Administrator on 2017/5/16 0016.
  */
 
-public class PlaylistDetailActivity extends BasePlaybarActivity {
+public class PlaylistDetailActivity extends BasePlayingbarActivity {
     private static final String TAG = "PlaylistDetailActivity";
     @BindView(R.id.rv_playlistdetail)
     RecyclerView mRvPlaylistdetail;

@@ -6,7 +6,7 @@ import com.zionstudio.xmusic.R;
  * Created by Administrator on 2017/4/26 0026.
  */
 
-public class RecentlyPlayedActivity extends BasePlaybarActivity {
+public class RecentlyPlayedActivity extends BasePlayingbarActivity {
     @Override
     protected int getLayoutResID() {
         return R.layout.activity_recentlyplayed;

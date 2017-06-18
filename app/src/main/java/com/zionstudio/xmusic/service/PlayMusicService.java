@@ -118,7 +118,7 @@ public class PlayMusicService extends Service {
                     }
                     sCover = null;
                     isPaused = false;
-                    loadCoverBytes();
+                    loadCoverBytes(mPlayingSong);
                     Intent intent = new Intent("com.zionstudio.xmusic.playstate");
                     intent.putExtra("type", "start");
                     sendBroadcast(intent);
@@ -368,7 +368,8 @@ public class PlayMusicService extends Service {
      */
     public byte[] getCoverBytes() {
         if (sPlayer.isPlaying() || isPaused) {
-            return mCoverBytes;
+            return mPlayingSong.coverBytes;
+//            return mCoverBytes;
         }
         return null;
     }
@@ -381,11 +382,10 @@ public class PlayMusicService extends Service {
             return;
         }
         if (mPlayingSong.type == Constants.TYPE_LOCAL) {
-            mCoverBytes = BitmapUtils.getCoverByteArray(mPlayingSong);
+            mPlayingSong.coverBytes = BitmapUtils.getCoverByteArray(mPlayingSong);
             Intent intent = new Intent("com.zionstudio.xmusic.playstate");
             intent.putExtra("type", "updatePlaybar");
             sendBroadcast(intent);
-
         } else {
             Glide.with(this)
                     .asBitmap()
@@ -393,14 +393,66 @@ public class PlayMusicService extends Service {
                     .into(new SimpleTarget<Bitmap>() {
                         @Override
                         public void onResourceReady(Bitmap bitmap, Transition<? super Bitmap> transition) {
-                            mCoverBytes = BitmapUtils.bitmap2Bytes(bitmap, Bitmap.CompressFormat.JPEG);
-                            Log.e(TAG, "on load online cover bytes succeed" + "url: " + mPlayingSong.al.get(0).picUrl);
+//                            mCoverBytes = BitmapUtils.bitmap2Bytes(bitmap, Bitmap.CompressFormat.JPEG);
+                            mPlayingSong.coverBytes = BitmapUtils.bitmap2Bytes(bitmap, Bitmap.CompressFormat.JPEG);
                             Intent intent = new Intent("com.zionstudio.xmusic.playstate");
                             intent.putExtra("type", "updatePlaybar");
                             sendBroadcast(intent);
                             sendNotification();
                         }
                     });
+        }
+    }
+
+    /**
+     * 加载正在播放的歌曲的封面的字节数组
+     *
+     * @param s 需要加载封面的歌曲
+     */
+    private void loadCoverBytes(final Song s) {
+        if (s == null) {
+            return;
+        }
+        if (s.type == Constants.TYPE_LOCAL) {
+//            mCoverBytes = BitmapUtils.getCoverByteArray(mPlayingSong);
+            s.coverBytes = BitmapUtils.getCoverByteArray(s);
+            Intent intent = new Intent("com.zionstudio.xmusic.playstate");
+            intent.putExtra("type", "updatePlaybar");
+            sendBroadcast(intent);
+
+        } else {
+            Glide.with(this)
+                    .asBitmap()
+                    .load(s.al.get(0).picUrl)
+                    .into(new SimpleTarget<Bitmap>() {
+                        @Override
+                        public void onResourceReady(Bitmap bitmap, Transition<? super Bitmap> transition) {
+//                            mCoverBytes = BitmapUtils.bitmap2Bytes(bitmap, Bitmap.CompressFormat.JPEG);
+                            s.coverBytes = BitmapUtils.bitmap2Bytes(bitmap, Bitmap.CompressFormat.JPEG);
+                            Intent intent = new Intent("com.zionstudio.xmusic.playstate");
+                            intent.putExtra("type", "updatePlaybar");
+                            sendBroadcast(intent);
+                            sendNotification();
+                        }
+                    });
+        }
+    }
+
+    /**
+     * 加载下一首歌曲的封面的字节数组，如果存在下一首
+     */
+    public void loadNextSongCoverBytes() {
+        if (mApplication.mPlayingIndex < mApplication.mPlayingList.size() - 1) {
+            loadCoverBytes(mApplication.mPlayingList.get(mApplication.mPlayingIndex + 1));
+        }
+    }
+
+    /**
+     * 加载上一首歌曲的封面的字节数组，如果存在上一首
+     */
+    public void loadPreSongCoverBytes() {
+        if (mApplication.mPlayingIndex > 0 && mApplication.mPlayingIndex < mApplication.mPlayingList.size()) {
+            loadCoverBytes(mApplication.mPlayingList.get(mApplication.mPlayingIndex - 1));
         }
     }
 

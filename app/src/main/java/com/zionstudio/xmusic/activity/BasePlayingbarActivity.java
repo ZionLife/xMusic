@@ -7,10 +7,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -18,15 +18,15 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 import com.zionstudio.xmusic.R;
+import com.zionstudio.xmusic.adapter.PlayingbarAdapter;
 import com.zionstudio.xmusic.model.playlist.Song;
 import com.zionstudio.xmusic.service.PlayMusicService;
 import com.zionstudio.xmusic.util.BitmapUtils;
-import com.zionstudio.xmusic.util.Constants;
 import com.zionstudio.xmusic.view.RoundProgress;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -39,14 +39,12 @@ import butterknife.OnClick;
  * Created by Administrator on 2017/5/1 0001.
  */
 
-public abstract class BasePlaybarActivity extends BaseActivity {
+public abstract class BasePlayingbarActivity extends BaseActivity {
     protected static ServiceConnection sConnection;
     protected static PlayMusicService sService;
     protected Song playingSong;
     protected static View sPlayingBar;
-    private static final String TAG = "BasePlaybarActivity";
-    private static TimerTask sTimerTask;
-    private static Timer sTimer;
+    private static final String TAG = "BasePlayingbarActivity";
 
     @BindView(R.id.iv_cover_playing)
     ImageView mIvCoverPlaying;
@@ -62,6 +60,8 @@ public abstract class BasePlaybarActivity extends BaseActivity {
     RelativeLayout mRlPlaybutton;
     @BindView(R.id.ll_playbar)
     LinearLayout mLlPlaybar;
+    @BindView(R.id.vp_playingbar)
+    ViewPager mVpPlayingbar;
 
     private PlayStateReceiver mReceiver;
     private Handler mHandler = new Handler();
@@ -71,9 +71,11 @@ public abstract class BasePlaybarActivity extends BaseActivity {
     private Bitmap mCover;
     private boolean mActivityIsInvisible = false;
     private byte[] mCoverBytes;
+    private static List<Song> sPlayingbarSongs;
+    private PlayingbarAdapter mPlayingbarAdapter;
 
     protected void initData() {
-
+        sPlayingbarSongs = new ArrayList<>();
         //初始化ServiceConnection
         if (sConnection == null) {
             sConnection = new ServiceConnection() {
@@ -111,7 +113,9 @@ public abstract class BasePlaybarActivity extends BaseActivity {
     @Override
     protected void initView() {
         super.initView();
-        sPlayingBar = this.getLayoutInflater().inflate(R.layout.view_playingbar, null, false);
+        sPlayingBar = this.getLayoutInflater().inflate(R.layout.layout_playingbar, null, false);
+        mPlayingbarAdapter = new PlayingbarAdapter(this);
+        mPlayingbarAdapter.setDatas(sPlayingbarSongs);
     }
 
     /**
@@ -175,6 +179,7 @@ public abstract class BasePlaybarActivity extends BaseActivity {
                     public void run() {
                         if (mCoverBytes != null) {
                             mCover = BitmapUtils.decodeSampleBitmapFromBytes(mCoverBytes, mIvCoverPlaying.getWidth(), mIvCoverPlaying.getHeight());
+
                         }
                         if (mCover != null) {
                             mIvCoverPlaying.setImageBitmap(mCover);
@@ -187,6 +192,28 @@ public abstract class BasePlaybarActivity extends BaseActivity {
             updateProgress();
         }
     }
+//    protected void updatePlaybar() {
+//
+//        if (sService != null) {
+//            Song s = sService.getPlayingSong();
+//            if (s != null) {
+//                sPlayingbarSongs.clear();
+//                if (sApplication.mPlayingIndex > 0 && sApplication.mPlayingIndex < sApplication.mPlayingList.size()) {
+//                    sService.loadPreSongCoverBytes();
+//                    sPlayingbarSongs.add(sApplication.mPlayingList.get(sApplication.mPlayingIndex - 1));
+//                }
+//                if (sService.getPlayingSong() != null) {
+//                    sPlayingbarSongs.add(sService.getPlayingSong());
+//                }
+//                if (sApplication.mPlayingIndex < sApplication.mPlayingList.size() - 1) {
+//                    sService.loadNextSongCoverBytes();
+//                    sPlayingbarSongs.add(sApplication.mPlayingList.get(sApplication.mPlayingIndex + 1));
+//                }
+//                mPlayingbarAdapter.notifyDataSetChanged();
+//                updateProgress();
+//            }
+//        }
+//    }
 
     @Override
     protected void onDestroy() {
@@ -214,7 +241,7 @@ public abstract class BasePlaybarActivity extends BaseActivity {
                 }
                 break;
             case R.id.ll_playbar:
-                startActivity(new Intent(BasePlaybarActivity.this, PlayDetailActivity.class));
+                startActivity(new Intent(BasePlayingbarActivity.this, PlayDetailActivity.class));
                 break;
         }
     }
@@ -229,16 +256,16 @@ public abstract class BasePlaybarActivity extends BaseActivity {
             String type = intent.getStringExtra("type");
             switch (type) {
                 case "start":
-//                    BasePlaybarActivity.this.updatePlaybar();
+//                    BasePlayingbarActivity.this.updatePlaybar();
                     mHandler.post(mRunnable);
                     mNeedUpdateProgress = true;
                     break;
                 case "paused":
-                    BasePlaybarActivity.this.updatePlaybar();
+                    BasePlayingbarActivity.this.updatePlaybar();
                     mNeedUpdateProgress = false;
                     break;
                 case "continue":
-                    BasePlaybarActivity.this.updatePlaybar();
+                    BasePlayingbarActivity.this.updatePlaybar();
                     mNeedUpdateProgress = true;
                     mHandler.post(mRunnable);
                     break;
@@ -251,7 +278,7 @@ public abstract class BasePlaybarActivity extends BaseActivity {
                     mNeedUpdateProgress = false;
                     break;
                 case "updatePlaybar":
-                    BasePlaybarActivity.this.updatePlaybar();
+                    BasePlayingbarActivity.this.updatePlaybar();
                     break;
             }
         }

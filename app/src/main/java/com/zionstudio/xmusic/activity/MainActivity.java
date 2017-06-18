@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class MainActivity extends BasePlaybarActivity {
+public class MainActivity extends BasePlayingbarActivity {
     private static final String TAG = "MainActivity";
     private static ArrayList<Fragment> sFragmentList = new ArrayList<Fragment>();
     private static FragmentManager sFM = null;

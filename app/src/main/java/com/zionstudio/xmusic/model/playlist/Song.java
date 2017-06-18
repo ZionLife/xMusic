@@ -33,4 +33,5 @@ public class Song implements Serializable {
     public long mv;
     //专辑封面图片地址
     public String picUrl;
+    public byte[] coverBytes;
 }

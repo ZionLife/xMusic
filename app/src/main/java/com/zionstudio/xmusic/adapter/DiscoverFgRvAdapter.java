@@ -152,7 +152,6 @@ public class DiscoverFgRvAdapter extends RecyclerView.Adapter {
      * @param holder
      */
     private void initBanner(final BannerHolder holder) {
-        Log.e(TAG, "initBanner！");
         mBannersAdapter = new BannersAdapter(mContext, mBanners);
         holder.vp.setAdapter(mBannersAdapter);
         CircleNavigator circleNavigator = new CircleNavigator(mContext);

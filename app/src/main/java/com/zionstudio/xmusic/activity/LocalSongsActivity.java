@@ -28,7 +28,7 @@ import butterknife.OnClick;
  * Created by Administrator on 2017/4/26 0026.
  */
 
-public class LocalSongsActivity extends BasePlaybarActivity {
+public class LocalSongsActivity extends BasePlayingbarActivity {
     private static final String TAG = "LocalSongsActivity";
     private LocalSongsAdapter mAdapter = null;
     public List<Song> mLocalSongs = new ArrayList<Song>();

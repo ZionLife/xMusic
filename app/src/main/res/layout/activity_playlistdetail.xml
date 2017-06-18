@@ -70,7 +70,7 @@
         />
 
     <include
-        layout="@layout/view_playingbar"
+        layout="@layout/layout_playingbar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/playbar"
         android:layout_alignParentBottom="true"/>
